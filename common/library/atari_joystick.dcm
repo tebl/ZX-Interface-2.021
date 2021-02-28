@@ -1,0 +1,18 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP Atari_Joystick
+D 9-pin male D-SUB connector
+K connector male D-SUB
+$ENDCMP
+#
+$CMP Atari_Joystick_Passive
+D 9-pin male D-SUB connector
+K connector male D-SUB
+$ENDCMP
+#
+$CMP Atari_Minimal
+D 9-pin male D-SUB connector
+K connector male D-SUB
+$ENDCMP
+#
+#End Doc Library
