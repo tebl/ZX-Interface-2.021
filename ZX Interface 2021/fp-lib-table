@@ -1,4 +1,5 @@
 (fp_lib_table
   (lib (name mounting)(type KiCad)(uri $KIPRJMOD/../common/modules/mounting.pretty)(options "")(descr ""))
   (lib (name zx_spectrum)(type KiCad)(uri $KIPRJMOD/../common/modules/zx_spectrum.pretty)(options "")(descr ""))
+  (lib (name RND_DSUB)(type KiCad)(uri $KIPRJMOD/../common/modules/RND_DSUB.pretty)(options "")(descr ""))
 )
