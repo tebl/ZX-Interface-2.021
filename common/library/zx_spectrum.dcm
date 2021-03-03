@@ -1,0 +1,19 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP cartridge
+D ZX Spectrum Extended Cartridge Port
+K connector
+F ~
+$ENDCMP
+#
+$CMP cartridge_port
+D ZX Spectrum Extended Cartridge Port
+K connector
+F ~
+$ENDCMP
+#
+$CMP expansion_port
+D ZX Spectrum 48k Expansion Port
+$ENDCMP
+#
+#End Doc Library
