@@ -1,4 +1,4 @@
-19051593829248056
+19058051366466457
 1n4148
 D_DO-35_SOD27_P2.54mm_Vertical_AnodeUp
 Diode, DO-35_SOD27 series, Axial, Vertical, pin pitch=2.54mm, , length*diameter=4*2mm^2, , http://www.diodes.com/_files/packages/DO-35.pdf
@@ -83075,6 +83075,34 @@ varistor SIOV
 0
 2
 2
+artwork
+interface_2021
+
+
+0
+0
+0
+artwork
+joystick
+
+
+0
+0
+0
+artwork
+sinclair_keyboard
+
+
+0
+0
+0
+artwork
+sinclair_title
+
+
+0
+0
+0
 mounting
 M2
 module 1 pin (ou trou mecanique de percage)
