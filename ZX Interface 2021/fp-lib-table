@@ -4,4 +4,5 @@
   (lib (name RND_DSUB)(type KiCad)(uri $KIPRJMOD/../common/modules/RND_DSUB.pretty)(options "")(descr ""))
   (lib (name 1n4148)(type KiCad)(uri $KIPRJMOD/../common/modules/1n4148.pretty)(options "")(descr ""))
   (lib (name switch_cutout)(type KiCad)(uri $KIPRJMOD/../common/modules/switch_cutout.pretty)(options "")(descr ""))
+  (lib (name artwork)(type KiCad)(uri $KIPRJMOD/../common/modules/artwork.pretty)(options "")(descr ""))
 )
