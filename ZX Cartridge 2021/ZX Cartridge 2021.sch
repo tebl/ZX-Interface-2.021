@@ -16,12 +16,12 @@ $EndDescr
 $Comp
 L power:GND #PWR01
 U 1 1 604A4F46
-P 6750 7325
-F 0 "#PWR01" H 6750 7075 50  0001 C CNN
-F 1 "GND" H 6755 7152 50  0000 C CNN
-F 2 "" H 6750 7325 50  0001 C CNN
-F 3 "" H 6750 7325 50  0001 C CNN
-	1    6750 7325
+P 6750 7400
+F 0 "#PWR01" H 6750 7150 50  0001 C CNN
+F 1 "GND" H 6755 7227 50  0000 C CNN
+F 2 "" H 6750 7400 50  0001 C CNN
+F 3 "" H 6750 7400 50  0001 C CNN
+	1    6750 7400
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -38,12 +38,12 @@ $EndComp
 $Comp
 L power:VCC #PWR02
 U 1 1 604DD34F
-P 6750 6825
-F 0 "#PWR02" H 6750 6675 50  0001 C CNN
-F 1 "VCC" H 6765 6998 50  0000 C CNN
-F 2 "" H 6750 6825 50  0001 C CNN
-F 3 "" H 6750 6825 50  0001 C CNN
-	1    6750 6825
+P 6575 6725
+F 0 "#PWR02" H 6575 6575 50  0001 C CNN
+F 1 "VCC" H 6590 6898 50  0000 C CNN
+F 2 "" H 6575 6725 50  0001 C CNN
+F 3 "" H 6575 6725 50  0001 C CNN
+	1    6575 6725
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -331,7 +331,7 @@ U 1 1 606CE17C
 P 11125 575
 F 0 "M4" H 11125 675 50  0001 C CNN
 F 1 "Mounting" H 11125 500 50  0001 C CNN
-F 2 "" H 11125 575 50  0001 C CNN
+F 2 "mounting:M3_pin" H 11125 575 50  0001 C CNN
 F 3 "~" H 11125 575 50  0001 C CNN
 	1    11125 575 
 	1    0    0    -1  
@@ -342,7 +342,7 @@ U 1 1 606CE51A
 P 11000 575
 F 0 "M3" H 11000 675 50  0001 C CNN
 F 1 "Mounting" H 11000 500 50  0001 C CNN
-F 2 "" H 11000 575 50  0001 C CNN
+F 2 "mounting:M3_pin" H 11000 575 50  0001 C CNN
 F 3 "~" H 11000 575 50  0001 C CNN
 	1    11000 575 
 	1    0    0    -1  
@@ -353,7 +353,7 @@ U 1 1 606CE890
 P 10875 575
 F 0 "M2" H 10875 675 50  0001 C CNN
 F 1 "Mounting" H 10875 500 50  0001 C CNN
-F 2 "" H 10875 575 50  0001 C CNN
+F 2 "mounting:M3_pin" H 10875 575 50  0001 C CNN
 F 3 "~" H 10875 575 50  0001 C CNN
 	1    10875 575 
 	1    0    0    -1  
@@ -364,7 +364,7 @@ U 1 1 606CED63
 P 10750 575
 F 0 "M1" H 10750 675 50  0001 C CNN
 F 1 "Mounting" H 10750 500 50  0001 C CNN
-F 2 "" H 10750 575 50  0001 C CNN
+F 2 "mounting:M3_pin" H 10750 575 50  0001 C CNN
 F 3 "~" H 10750 575 50  0001 C CNN
 	1    10750 575 
 	1    0    0    -1  
@@ -450,8 +450,6 @@ Wire Wire Line
 Wire Wire Line
 	8725 3975 7725 3975
 Wire Wire Line
-	6750 6825 6750 7050
-Wire Wire Line
 	6750 7250 6750 7325
 $Comp
 L power:VCC #PWR0103
@@ -528,6 +526,225 @@ Wire Bus Line
 NoConn ~ 8425 3900
 NoConn ~ 8225 3900
 NoConn ~ 8325 3900
+Wire Wire Line
+	1800 3025 2150 3025
+Wire Wire Line
+	1800 3125 2150 3125
+Wire Wire Line
+	1800 3225 2150 3225
+Wire Wire Line
+	1800 3325 2150 3325
+Wire Wire Line
+	1800 3425 2150 3425
+Wire Wire Line
+	1800 3525 2150 3525
+Wire Wire Line
+	1800 3625 2150 3625
+Wire Wire Line
+	1800 3725 2150 3725
+Wire Wire Line
+	1800 3825 2150 3825
+Wire Wire Line
+	1800 3925 2150 3925
+Wire Wire Line
+	1800 4025 2150 4025
+Wire Wire Line
+	1800 4125 2150 4125
+Wire Wire Line
+	1800 4225 2150 4225
+Wire Wire Line
+	1800 4325 2150 4325
+Wire Wire Line
+	1800 4425 2150 4425
+Wire Wire Line
+	2950 3025 3300 3025
+Wire Wire Line
+	2950 3125 3300 3125
+Wire Wire Line
+	2950 3225 3300 3225
+Wire Wire Line
+	2950 3325 3300 3325
+Wire Wire Line
+	2950 3425 3300 3425
+Wire Wire Line
+	2950 3525 3300 3525
+Wire Wire Line
+	2950 3625 3300 3625
+Wire Wire Line
+	2950 3725 3300 3725
+Wire Wire Line
+	2150 4525 1800 4525
+Wire Wire Line
+	2150 4825 1800 4825
+Wire Wire Line
+	1800 4725 2150 4725
+Text Label 1825 4725 0    50   ~ 0
+~ROM_0
+$Comp
+L power:GND #PWR?
+U 1 1 6072DF1D
+P 2550 5025
+F 0 "#PWR?" H 2550 4775 50  0001 C CNN
+F 1 "GND" H 2555 4852 50  0000 C CNN
+F 2 "" H 2550 5025 50  0001 C CNN
+F 3 "" H 2550 5025 50  0001 C CNN
+	1    2550 5025
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VCC #PWR?
+U 1 1 6072DF23
+P 2550 2825
+F 0 "#PWR?" H 2550 2675 50  0001 C CNN
+F 1 "VCC" H 2565 2998 50  0000 C CNN
+F 2 "" H 2550 2825 50  0001 C CNN
+F 3 "" H 2550 2825 50  0001 C CNN
+	1    2550 2825
+	1    0    0    -1  
+$EndComp
+Text Label 1825 4825 0    50   ~ 0
+~ROM_OE
+Text Label 1825 4525 0    50   ~ 0
+BA15
+$Comp
+L Memory_EPROM:27C512 U2
+U 1 1 6072DF2B
+P 2550 3925
+F 0 "U2" H 2325 4975 50  0000 C CNN
+F 1 "27C512" V 2550 3925 50  0000 C CNN
+F 2 "Package_DIP:DIP-28_W15.24mm_Socket_LongPads" H 2550 3925 50  0001 C CNN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/doc0015.pdf" H 2550 3925 50  0001 C CNN
+	1    2550 3925
+	1    0    0    -1  
+$EndComp
+Text Label 1825 4425 0    50   ~ 0
+BA14
+Text Label 1825 4325 0    50   ~ 0
+A13
+Text Label 1825 4225 0    50   ~ 0
+A12
+Text Label 1825 4125 0    50   ~ 0
+A11
+Text Label 1825 4025 0    50   ~ 0
+A10
+Text Label 1825 3925 0    50   ~ 0
+A9
+Text Label 1825 3825 0    50   ~ 0
+A8
+Text Label 1825 3725 0    50   ~ 0
+A7
+Text Label 1825 3625 0    50   ~ 0
+A6
+Text Label 1825 3525 0    50   ~ 0
+A5
+Text Label 1825 3425 0    50   ~ 0
+A4
+Text Label 1825 3325 0    50   ~ 0
+A3
+Text Label 1825 3225 0    50   ~ 0
+A2
+Text Label 1825 3125 0    50   ~ 0
+A1
+Text Label 1825 3025 0    50   ~ 0
+A0
+Text Label 3275 3725 2    50   ~ 0
+D7
+Text Label 3275 3625 2    50   ~ 0
+D6
+Text Label 3275 3525 2    50   ~ 0
+D5
+Text Label 3275 3425 2    50   ~ 0
+D4
+Text Label 3275 3325 2    50   ~ 0
+D3
+Text Label 3275 3225 2    50   ~ 0
+D2
+Text Label 3275 3125 2    50   ~ 0
+D1
+Text Label 3275 3025 2    50   ~ 0
+D0
+Entry Wire Line
+	1700 3725 1800 3625
+Entry Wire Line
+	1700 3825 1800 3725
+Entry Wire Line
+	1700 3925 1800 3825
+Entry Wire Line
+	1700 3425 1800 3325
+Entry Wire Line
+	1700 3525 1800 3425
+Entry Wire Line
+	1700 3625 1800 3525
+Entry Wire Line
+	1700 3225 1800 3125
+Entry Wire Line
+	1700 3325 1800 3225
+Entry Wire Line
+	1700 3125 1800 3025
+Entry Wire Line
+	1700 4625 1800 4525
+Entry Wire Line
+	1700 4925 1800 4825
+Entry Wire Line
+	1700 4825 1800 4725
+Entry Wire Line
+	1700 4325 1800 4225
+Entry Wire Line
+	1700 4425 1800 4325
+Entry Wire Line
+	1700 4525 1800 4425
+Entry Wire Line
+	1700 4125 1800 4025
+Entry Wire Line
+	1700 4225 1800 4125
+Entry Wire Line
+	1700 4025 1800 3925
+Entry Wire Line
+	3300 3625 3400 3525
+Entry Wire Line
+	3300 3725 3400 3625
+Entry Wire Line
+	3300 3325 3400 3225
+Entry Wire Line
+	3300 3425 3400 3325
+Entry Wire Line
+	3300 3525 3400 3425
+Entry Wire Line
+	3300 3125 3400 3025
+Entry Wire Line
+	3300 3225 3400 3125
+Entry Wire Line
+	3300 3025 3400 2925
+Wire Bus Line
+	1700 5375 3400 5375
+Connection ~ 3400 5375
+$Comp
+L Device:C_Small C2
+U 1 1 6073AC75
+P 6575 7150
+F 0 "C2" V 6625 7000 50  0000 L CNN
+F 1 "100nF" V 6625 7200 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.7mm_W2.5mm_P5.00mm" H 6575 7150 50  0001 C CNN
+F 3 "~" H 6575 7150 50  0001 C CNN
+	1    6575 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6750 7325 6575 7325
+Wire Wire Line
+	6575 7325 6575 7250
+Wire Wire Line
+	6750 7325 6750 7400
+Connection ~ 6750 7325
+Wire Wire Line
+	6575 6725 6575 6825
+Wire Wire Line
+	6575 6825 6750 6825
+Connection ~ 6575 6825
+Wire Wire Line
+	6750 6825 6750 7050
+Wire Wire Line
+	6575 6825 6575 7050
 Wire Bus Line
 	5100 2450 5100 5375
 Wire Bus Line
@@ -535,5 +752,7 @@ Wire Bus Line
 Wire Bus Line
 	5100 2450 8900 2450
 Wire Bus Line
-	3400 3125 3400 5375
+	3400 2925 3400 5375
+Wire Bus Line
+	1700 3125 1700 5375
 $EndSCHEMATC
