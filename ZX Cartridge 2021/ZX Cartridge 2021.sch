@@ -68,7 +68,7 @@ F 3 "" H 8725 3900 50  0001 C CNN
 	1    8725 3900
 	1    0    0    -1  
 $EndComp
-Text Label 8225 4400 1    50   ~ 0
+Text Label 8025 4400 1    50   ~ 0
 ~ROM_0
 Text Label 6625 2575 3    50   ~ 0
 D0
@@ -146,7 +146,7 @@ Wire Wire Line
 	6825 2550 6825 2900
 Wire Wire Line
 	6725 2550 6725 2900
-Text Label 8325 4400 1    50   ~ 0
+Text Label 7925 4400 1    50   ~ 0
 ~ROM_OE
 Wire Wire Line
 	3500 3025 3850 3025
@@ -302,9 +302,9 @@ Entry Wire Line
 Entry Wire Line
 	6925 2450 7025 2550
 Entry Wire Line
-	8325 4525 8225 4425
+	8125 4525 8025 4425
 Entry Wire Line
-	8425 4525 8325 4425
+	8025 4525 7925 4425
 Entry Wire Line
 	7525 4525 7425 4425
 Entry Wire Line
@@ -376,9 +376,9 @@ Wire Wire Line
 Wire Wire Line
 	8725 3975 8725 3900
 Wire Wire Line
-	8325 3900 8325 4425
+	7925 3900 7925 4425
 Wire Wire Line
-	8225 3900 8225 4425
+	8025 3900 8025 4425
 Wire Wire Line
 	7525 3900 7525 4425
 Wire Wire Line
@@ -466,8 +466,6 @@ F 3 "" H 7725 2825 50  0001 C CNN
 $EndComp
 NoConn ~ 6825 3900
 NoConn ~ 7625 3900
-NoConn ~ 7925 3900
-NoConn ~ 8025 3900
 NoConn ~ 8125 3900
 NoConn ~ 7025 3900
 NoConn ~ 8125 2900
@@ -528,6 +526,8 @@ Entry Wire Line
 Wire Bus Line
 	3400 5375 5100 5375
 NoConn ~ 8425 3900
+NoConn ~ 8225 3900
+NoConn ~ 8325 3900
 Wire Bus Line
 	5100 2450 5100 5375
 Wire Bus Line

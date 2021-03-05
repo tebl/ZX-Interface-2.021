@@ -808,8 +808,8 @@ F 3 "http://www.ti.com/lit/gpn/sn74LS27" H 3375 10400 50  0001 C CNN
 	2    3375 10400
 	1    0    0    -1  
 $EndComp
-Text Label 2875 7500 0    50   ~ 0
-IF2_EN
+Text Label 2925 8800 3    50   ~ 0
+CARTRIDGE_EN
 $Comp
 L power:VCC #PWR0111
 U 1 1 6152F447
@@ -1539,13 +1539,13 @@ Text Label 10075 6350 3    50   ~ 0
 BA17
 Text Label 10175 6350 3    50   ~ 0
 BA18
-Text Label 9775 8175 1    50   ~ 0
+Text Label 10175 8175 1    50   ~ 0
 ~ROM_3
-Text Label 9875 8175 1    50   ~ 0
+Text Label 10075 8175 1    50   ~ 0
 ~ROM_2
 Text Label 9975 8175 1    50   ~ 0
 ~ROM_1
-Text Label 10075 8175 1    50   ~ 0
+Text Label 9875 8175 1    50   ~ 0
 ~ROM_0
 Text Label 8475 6350 3    50   ~ 0
 D0
@@ -1629,7 +1629,7 @@ Wire Wire Line
 	10075 6325 10075 6675
 Wire Wire Line
 	10175 6325 10175 6675
-Text Label 10175 8175 1    50   ~ 0
+Text Label 9775 8175 1    50   ~ 0
 ~ROM_OE
 Text GLabel 9575 6600 1    50   Output ~ 0
 EXROM
