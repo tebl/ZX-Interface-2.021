@@ -120,14 +120,6 @@ Text Label 7625 2575 3    50   ~ 0
 A12
 Text Label 7525 4400 1    50   ~ 0
 A13
-Text Label 7925 2575 3    50   ~ 0
-BA14
-Text Label 8025 2575 3    50   ~ 0
-BA15
-Wire Wire Line
-	8025 2900 8025 2550
-Wire Wire Line
-	7925 2550 7925 2900
 Wire Wire Line
 	7625 2550 7625 2900
 Wire Wire Line
@@ -226,7 +218,7 @@ F 3 "" H 4250 2825 50  0001 C CNN
 $EndComp
 Text Label 3525 4825 0    50   ~ 0
 ~ROM_OE
-Text Label 3525 4525 0    50   ~ 0
+Text Label 1825 4525 0    50   ~ 0
 BA15
 $Comp
 L Memory_EPROM:27C512 U1
@@ -239,7 +231,7 @@ F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/doc0015.pdf" H 4250 3925 50
 	1    4250 3925
 	1    0    0    -1  
 $EndComp
-Text Label 3525 4425 0    50   ~ 0
+Text Label 1825 4425 0    50   ~ 0
 BA14
 Text Label 3525 4325 0    50   ~ 0
 A13
@@ -407,12 +399,6 @@ Entry Wire Line
 	7325 2450 7425 2550
 Entry Wire Line
 	7125 2450 7225 2550
-Entry Wire Line
-	7925 2450 8025 2550
-Entry Wire Line
-	7825 2450 7925 2550
-Wire Bus Line
-	8900 2450 8900 4525
 Wire Wire Line
 	7725 2825 7725 2900
 $Comp
@@ -603,8 +589,6 @@ F 3 "" H 2550 2825 50  0001 C CNN
 $EndComp
 Text Label 1825 4825 0    50   ~ 0
 ~ROM_OE
-Text Label 1825 4525 0    50   ~ 0
-BA15
 $Comp
 L Memory_EPROM:27C512 U2
 U 1 1 6072DF2B
@@ -616,8 +600,6 @@ F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/doc0015.pdf" H 2550 3925 50
 	1    2550 3925
 	1    0    0    -1  
 $EndComp
-Text Label 1825 4425 0    50   ~ 0
-BA14
 Text Label 1825 4325 0    50   ~ 0
 A13
 Text Label 1825 4225 0    50   ~ 0
@@ -750,6 +732,135 @@ Entry Wire Line
 	8225 4525 8125 4425
 Wire Wire Line
 	8125 3900 8125 4425
+Text Label 9475 2950 0    50   ~ 0
+BA15
+Text Label 9475 3650 0    50   ~ 0
+BA14
+Entry Wire Line
+	9350 3550 9450 3650
+Entry Wire Line
+	9350 2850 9450 2950
+Wire Wire Line
+	10000 2950 9450 2950
+Wire Wire Line
+	10550 2725 10200 2725
+Wire Wire Line
+	10000 2875 10000 2950
+$Comp
+L power:VCC #PWR03
+U 1 1 60482C7C
+P 9725 2650
+F 0 "#PWR03" H 9725 2500 50  0001 C CNN
+F 1 "VCC" H 9740 2823 50  0000 C CNN
+F 2 "" H 9725 2650 50  0001 C CNN
+F 3 "" H 9725 2650 50  0001 C CNN
+	1    9725 2650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9725 2725 9725 2650
+Wire Wire Line
+	9800 2725 9725 2725
+$Comp
+L solder_select:SolderJumper_3_Bridged12 JP1
+U 1 1 60482C74
+P 10000 2725
+F 0 "JP1" H 10000 2930 50  0000 C CNN
+F 1 "A15" H 10000 2839 50  0000 C CNN
+F 2 "solder_bridge:select" H 10000 2725 50  0001 C CNN
+F 3 "~" H 10000 2725 50  0001 C CNN
+	1    10000 2725
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	10000 3650 9450 3650
+Wire Wire Line
+	10000 3575 10000 3650
+$Comp
+L power:VCC #PWR04
+U 1 1 6045383E
+P 9725 3350
+F 0 "#PWR04" H 9725 3200 50  0001 C CNN
+F 1 "VCC" H 9740 3523 50  0000 C CNN
+F 2 "" H 9725 3350 50  0001 C CNN
+F 3 "" H 9725 3350 50  0001 C CNN
+	1    9725 3350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9725 3425 9725 3350
+Wire Wire Line
+	9800 3425 9725 3425
+$Comp
+L solder_select:SolderJumper_3_Bridged12 JP2
+U 1 1 60439B63
+P 10000 3425
+F 0 "JP2" H 10000 3630 50  0000 C CNN
+F 1 "A14" H 10000 3539 50  0000 C CNN
+F 2 "solder_bridge:select" H 10000 3425 50  0001 C CNN
+F 3 "~" H 10000 3425 50  0001 C CNN
+	1    10000 3425
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	10550 2725 10550 2325
+Wire Wire Line
+	8025 2325 8025 2900
+Wire Wire Line
+	7925 2250 7925 2900
+Wire Wire Line
+	10200 3425 10650 3425
+Wire Wire Line
+	10650 2250 10650 3425
+Wire Bus Line
+	8900 2450 8900 4525
+Wire Wire Line
+	7925 2250 10650 2250
+Wire Wire Line
+	8025 2325 10550 2325
+Wire Bus Line
+	9350 2450 8900 2450
+Connection ~ 8900 2450
+Wire Notes Line
+	9125 3800 10925 3800
+Wire Notes Line
+	10925 3800 10925 1275
+Wire Notes Line
+	10925 1275 9125 1275
+Wire Notes Line
+	9125 1275 9125 3800
+Text Notes 9775 1375 0    50   ~ 0
+EPROM Size
+Text Notes 9225 1650 0    50   ~ 0
+These jumpers  configure the size of\nEPROMs installed on the cartridge (pin 1\nwill be indicated by a square pad).
+Text Notes 9950 1875 0    50   ~ 0
+A15
+Text Notes 10250 1875 0    50   ~ 0
+A14
+Text Notes 9550 1975 0    50   ~ 0
+27C512
+Text Notes 9550 2075 0    50   ~ 0
+27C256
+Text Notes 9550 2175 0    50   ~ 0
+27C128
+Text Notes 9925 1975 0    50   ~ 0
+1-2
+Text Notes 10225 2075 0    50   ~ 0
+1-2
+Text Notes 9925 2075 0    50   ~ 0
+2-3
+Text Notes 9925 2175 0    50   ~ 0
+2-3
+Text Notes 10225 2175 0    50   ~ 0
+2-3
+Text Notes 10225 1975 0    50   ~ 0
+1-2
+Text Label 3525 4525 0    50   ~ 0
+BA15
+Text Label 3525 4425 0    50   ~ 0
+BA14
+Wire Bus Line
+	9350 2450 9350 3550
 Wire Bus Line
 	5100 2450 5100 5375
 Wire Bus Line

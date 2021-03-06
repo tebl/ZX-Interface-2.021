@@ -2,4 +2,5 @@
   (lib (name zx_spectrum)(type Legacy)(uri $KIPRJMOD/../common/library/zx_spectrum.lib)(options "")(descr ""))
   (lib (name mounting)(type Legacy)(uri $KIPRJMOD/../common/library/mounting.lib)(options "")(descr ""))
   (lib (name atari_joystick)(type Legacy)(uri $KIPRJMOD/../common/library/atari_joystick.lib)(options "")(descr ""))
+  (lib (name solder_select)(type Legacy)(uri "D:/ownCloud/Documents/Projects/ZX Interface 2.021/common/library/solder_select.lib")(options "")(descr ""))
 )
