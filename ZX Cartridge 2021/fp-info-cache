@@ -1,4 +1,4 @@
-19048586525330323
+19043752905037809
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -83068,27 +83068,6 @@ DEV
 0
 1
 1
-solder_bridge
-bridge
-Through hole straight pin header, 1x02, 1.00mm pitch, single row
-Through hole pin header THT 1x02 1.00mm single row
-0
-2
-2
-solder_bridge
-select
-Through hole straight pin header, 1x02, 1.00mm pitch, single row
-Through hole pin header THT 1x02 1.00mm single row
-0
-3
-3
-solder_bridge
-select2
-Through hole straight pin header, 1x02, 1.00mm pitch, single row
-Through hole pin header THT 1x02 1.00mm single row
-0
-3
-3
 zx_spectrum
 ZX_Spectrum_Cartridge
 
