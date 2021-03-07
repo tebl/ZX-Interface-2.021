@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name zx_spectrum)(type Legacy)(uri $KIPRJMOD/../../common/library/zx_spectrum.lib)(options "")(descr ""))
+  (lib (name mounting)(type Legacy)(uri $KIPRJMOD/../../common/library/mounting.lib)(options "")(descr ""))
+  (lib (name atari_joystick)(type Legacy)(uri $KIPRJMOD/../../common/library/atari_joystick.lib)(options "")(descr ""))
+)
