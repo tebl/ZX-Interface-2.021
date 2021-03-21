@@ -833,29 +833,18 @@ NoConn ~ 4900 8525
 NoConn ~ 4900 8625
 NoConn ~ 4900 8725
 Entry Wire Line
-	6100 8000 6200 7900
+	6100 8125 6200 8025
 NoConn ~ 9300 10050
 NoConn ~ 1850 3575
-$Comp
-L Connector_Generic:Conn_02x02_Odd_Even J3
-U 1 1 61A0CB30
-P 5350 7750
-F 0 "J3" H 5400 7967 50  0000 C CNN
-F 1 "SWAP_ROMS" H 5400 7876 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_2x02_P2.54mm_Vertical" H 5350 7750 50  0001 C CNN
-F 3 "~" H 5350 7750 50  0001 C CNN
-	1    5350 7750
-	1    0    0    -1  
-$EndComp
 Entry Wire Line
-	6100 7750 6200 7650
+	6100 8025 6200 7925
 Entry Wire Line
 	6100 8325 6200 8225
 Entry Wire Line
 	6100 8225 6200 8125
-Text Label 6075 8000 2    50   ~ 0
+Text Label 6075 8125 2    50   ~ 0
 ~ROM_1
-Text Label 6075 7750 2    50   ~ 0
+Text Label 6075 8025 2    50   ~ 0
 ~ROM_0
 Entry Wire Line
 	6100 10400 6200 10300
@@ -974,30 +963,6 @@ Wire Wire Line
 	2850 7300 6100 7300
 Wire Wire Line
 	2850 7400 6100 7400
-Wire Wire Line
-	6100 7750 5650 7750
-Wire Notes Line
-	5450 7775 5350 7775
-Wire Notes Line
-	5450 7725 5450 7775
-Wire Notes Line
-	5350 7725 5450 7725
-Wire Notes Line
-	5350 7775 5350 7725
-Wire Wire Line
-	5750 7850 5750 8125
-Wire Wire Line
-	5650 7850 5750 7850
-Wire Wire Line
-	5075 8000 6100 8000
-Wire Wire Line
-	5075 7850 5150 7850
-Wire Wire Line
-	5075 8000 5075 7850
-Wire Wire Line
-	4975 7750 5150 7750
-Wire Wire Line
-	4975 8025 4975 7750
 Wire Wire Line
 	9300 10650 9300 10850
 Wire Wire Line
@@ -1319,10 +1284,6 @@ Wire Wire Line
 	2850 7700 2850 8125
 Wire Wire Line
 	2850 8125 3900 8125
-Wire Wire Line
-	4900 8025 4975 8025
-Wire Wire Line
-	4900 8125 5750 8125
 Wire Wire Line
 	4900 8225 6100 8225
 Wire Wire Line
@@ -1762,14 +1723,10 @@ Wire Notes Line
 	5700 9575 5700 9250
 Text Notes 6375 9575 0    50   ~ 0
 /ROM_CS is an enable for\nthe internal ZX Spectrum\nROM. Bring high to use\ncartridge.
-Text Notes 9450 3275 0    50   ~ 0
-Sinclair Interface 2 joystick interface, but with\nAtari-style pinout (because no one wants to use\nan SJS or even have one that works properly).
+Text Notes 9400 3275 0    50   ~ 0
+Sinclair Interface 2 joystick interface, it has the \noriginal Atari-style pinout (because no one wants\nto use an SJS or even have one that still works).
 Wire Notes Line
-	9375 2975 11400 2975
-Wire Notes Line
-	11400 2975 11400 3375
-Wire Notes Line
-	11400 3375 9375 3375
+	11500 2975 11500 3375
 Wire Notes Line
 	9375 3375 9375 2975
 $Comp
@@ -2021,25 +1978,9 @@ Wire Wire Line
 Wire Wire Line
 	11150 2650 11150 2575
 Wire Wire Line
-	11150 2650 11475 2650
-Connection ~ 11475 2650
-Wire Wire Line
-	11475 2650 11675 2650
-Wire Wire Line
 	11675 2650 11675 2425
 Wire Wire Line
 	11675 2425 11825 2425
-$Comp
-L power:PWR_FLAG #FLG0101
-U 1 1 607D1200
-P 11475 2650
-F 0 "#FLG0101" H 11475 2725 50  0001 C CNN
-F 1 "PWR_FLAG" H 11475 2823 50  0001 C CNN
-F 2 "" H 11475 2650 50  0001 C CNN
-F 3 "~" H 11475 2650 50  0001 C CNN
-	1    11475 2650
-	1    0    0    -1  
-$EndComp
 Wire Bus Line
 	9250 700  3450 700 
 $Comp
@@ -2081,14 +2022,58 @@ Entry Wire Line
 	1475 2575 1575 2475
 Text Label 1600 2475 0    50   ~ 0
 ~NMI
+$Comp
+L Device:R R14
+U 1 1 60553925
+P 4675 5825
+F 0 "R14" V 4575 5775 50  0000 L CNN
+F 1 "330" V 4675 5750 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 4605 5825 50  0001 C CNN
+F 3 "~" H 4675 5825 50  0001 C CNN
+	1    4675 5825
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:LED_Small D11
+U 1 1 6059C36A
+P 4675 5575
+F 0 "D11" V 4721 5505 50  0000 R CNN
+F 1 "PWR" V 4630 5505 50  0000 R CNN
+F 2 "LED_THT:LED_D5.0mm" V 4675 5575 50  0001 C CNN
+F 3 "~" V 4675 5575 50  0001 C CNN
+	1    4675 5575
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:VCC #PWR0119
+U 1 1 6059DCD1
+P 4675 5475
+F 0 "#PWR0119" H 4675 5325 50  0001 C CNN
+F 1 "VCC" H 4690 5648 50  0000 C CNN
+F 2 "" H 4675 5475 50  0001 C CNN
+F 3 "" H 4675 5475 50  0001 C CNN
+	1    4675 5475
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0120
+U 1 1 6059E328
+P 4675 5975
+F 0 "#PWR0120" H 4675 5725 50  0001 C CNN
+F 1 "GND" H 4680 5802 50  0000 C CNN
+F 2 "" H 4675 5975 50  0001 C CNN
+F 3 "" H 4675 5975 50  0001 C CNN
+	1    4675 5975
+	1    0    0    -1  
+$EndComp
 Wire Notes Line
-	5350 7825 5350 7875
+	9375 3375 11500 3375
 Wire Notes Line
-	5350 7875 5450 7875
-Wire Notes Line
-	5450 7875 5450 7825
-Wire Notes Line
-	5450 7825 5350 7825
+	9375 2975 11500 2975
+Wire Wire Line
+	4900 8025 6100 8025
+Wire Wire Line
+	4900 8125 6100 8125
 Wire Bus Line
 	9250 700  9250 4300
 Wire Bus Line
@@ -2101,4 +2086,20 @@ Wire Bus Line
 	8275 8300 10750 8300
 Wire Bus Line
 	1475 700  1475 10850
+Wire Wire Line
+	11475 2650 11675 2650
+Wire Wire Line
+	11150 2650 11475 2650
+Connection ~ 11475 2650
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 607D1200
+P 11475 2650
+F 0 "#FLG0101" H 11475 2725 50  0001 C CNN
+F 1 "PWR_FLAG" H 11475 2823 50  0001 C CNN
+F 2 "" H 11475 2650 50  0001 C CNN
+F 3 "~" H 11475 2650 50  0001 C CNN
+	1    11475 2650
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
