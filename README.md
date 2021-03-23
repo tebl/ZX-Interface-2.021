@@ -12,3 +12,4 @@ http://www.users.globalnet.co.uk/~jg27paw4/yr03/yr03_19.htm#Buffer
 http://www.users.globalnet.co.uk/~jg27paw4/yr04/yr04_25.htm
 https://k1.spdns.de/Vintage/Sinclair/82/Doityourself/IF2%20cartridges/
 https://blog.gjmccarthy.co.uk/wp-content/uploads/2019/12/how.html
+http://www.fruitcake.plus.com/Sinclair/Interface2/Interface/Interface2_Circuitry.htm
