@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "ZX Interface 2.021"
 Date ""
-Rev ""
+Rev "B"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -1896,7 +1896,7 @@ L Device:LED_Small D11
 U 1 1 6059C36A
 P 4675 2050
 F 0 "D11" V 4721 1980 50  0000 R CNN
-F 1 "PWR" V 4630 1980 50  0000 R CNN
+F 1 "POWER" V 4630 1980 50  0000 R CNN
 F 2 "LED_THT:LED_D5.0mm" V 4675 2050 50  0001 C CNN
 F 3 "~" V 4675 2050 50  0001 C CNN
 	1    4675 2050
