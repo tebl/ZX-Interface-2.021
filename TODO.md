@@ -1,3 +1,3 @@
 # TODO
-- Mirror cartridge pinout to match interface.
-- Interface FA, enlarge controller port cutout
+- Build and test revision B
+- Create a launcher programx
