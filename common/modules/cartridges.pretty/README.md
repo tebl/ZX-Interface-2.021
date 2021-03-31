@@ -1,0 +1,3 @@
+# Artwork footprints
+
+Put your converted artwork footprints into this folder, this is mainly intended for use when adding artwork to faceplates. This is intentionally kept out of the repository, mainly because the likeness of characters are probably not included under fair use. I do this for fun and I probably earn a whole lot less than 0 for doing it, so I can't actually share any of my renditions of classic cartridges (unless rights holders volunteer them to me).
