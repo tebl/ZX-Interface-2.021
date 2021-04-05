@@ -6,6 +6,12 @@ K connector
 F ~
 $ENDCMP
 #
+$CMP cartridge_original
+D ZX Spectrum Extended Cartridge Port
+K connector
+F ~
+$ENDCMP
+#
 $CMP cartridge_port
 D ZX Spectrum Extended Cartridge Port
 K connector

@@ -1,0 +1,15 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 27C010
+D OTP EPROM 1 MiBit (128 Ki x 8 Bit)
+K OTP EPROM 1MiBit
+F http://ww1.microchip.com/downloads/en/DeviceDoc/doc0321.pdf
+$ENDCMP
+#
+$CMP 27C020
+D OTP EPROM 2 MiBit (256 Ki x 8 Bit)
+K OTP EPROM 2MiBit
+F http://ww1.microchip.com/downloads/en/devicedoc/doc0570.pdf
+$ENDCMP
+#
+#End Doc Library
