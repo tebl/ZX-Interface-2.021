@@ -76,6 +76,14 @@ The ZX Spectrum doesn't actually have any knowledge of any of the bank switching
 
 Unless you hold down any of the buttons when starting the computer, it should run through all of the tests once and then - after a countdown - page out the diagnostic ROM and return you to the standard ZX Spectrums basic. This is normal, it just shows that the entire system for the most part works as it should. At this point you might want to try out any of the images put into the other ROM banks, I've added some more details on what to do next to the [bank_switching](https://github.com/tebl/ZX-Interface-2.021/blob/main/documentation/bank_switching.md) document.
 
+You can control the LEDs directly from basic if you want to, they're placed on port 63 and by using the *OUT* command you can control them. All you need to do is write a value to have the LEDs display it in binary, for example the following to separately light up each row of LEDs:
+```
+OUT 63, 85
+OUT 63, 170
+```
+
+You know you want to program an LED chaser now, you know you do! In case you're not old enough, they're what made KITT cool and the Cylons scary.
+
 # 2> Schematic
 The supplied KiCad files should be sufficient as both a schematic and as a  starting point for ordering PCBs (basically you could just zip the contents of the export folder and upload that on a fabrication site), the schematic is also available in [PDF-format](https://github.com/tebl/ZX-Interface-2.021/tree/main/documentation/schematic) and this is what you'll need to print and work your way through this things don't work as expected after assembly.
 
