@@ -52,18 +52,18 @@ The ZX Spectrum doesn't actually have any knowledge of any of the bank switching
 The supplied KiCad files should be sufficient as both a schematic and as a  starting point for ordering PCBs (basically you could just zip the contents of the export folder and upload that on a fabrication site), the schematic is also available in [PDF-format](https://github.com/tebl/ZX-Interface-2.021/tree/main/documentation/schematic) and this is what you'll need to print and work your way through this things don't work as expected after assembly.
 
 # 3> BOM
-Most parts should be easy to get a hold of from your favourite local electronic component shop, but given that I don't have access to such shops where I live so everything was based on whatever I could get cheapest from eBay/AliExpress (free shipping, but plan on waiting 3-4 weeks for delivery). Note that with some titles, like *Basic Programming* and *synthcart* you're required to have two controllers - so plan on buying twice the amount of parts listed.
+Most parts should be easy to get a hold of from your favourite local electronic component shop, but given that I don't have access to such shops where I live so everything was based on whatever I could get cheapest from eBay/AliExpress (free shipping, but plan on waiting 3-4 weeks for delivery). 
 
 | Reference             | Item                                                              | Count | Order  |
 | --------------------- | ----------------------------------------------------------------- | ----- | ------ |
 | Cartridge PCB         | Fabricate using Gerber files                                      |     1 | PCBWay
-| Faceplate PCB         | Fabricate using Gerber files                                      |    (1)| PCBWay
-| U1,U2 *               | 27C128,27C256 or 27C512. W27C512 with 28-pin socket recommended   |  1 (1)|
-| C1,C2 *               | 100nF ceramic capacitor (5mm pin spacing)                         |  1 (1)|
-| Mounting **           | Nylon M3 hex standoffs 8mm                                        |    (4)|
-| Mounting **           | Nylon M3x6mm nylon screws                                         |    (4)|
-| Mounting **           | M3 nylon nut                                                      |    (4)|  
+| Faceplate PCB *       | Fabricate using Gerber files                                      |    (1)| PCBWay
+| U1,U2 **              | 27C128,27C256 or 27C512 (W27C512 recommended)                     |  1 (1)|
+| C1,C2 **              | 100nF ceramic capacitor (5mm pin spacing)                         |  1 (1)|
+| Mounting *            | Nylon M3 hex standoffs 8mm                                        |    (4)|
+| Mounting *            | Nylon M3x6mm nylon screws                                         |    (4)|
+| Mounting *            | M3 nylon nut                                                      |    (4)|  
 
-*) Only a single (E)EPROM is required to build a cartridge, components U2 and C2 are therefore listed as optional. Installing 28-pin wide DIP sockets is highly recommended rather than soldering the (E)EPROM directly to the board.
+*) The easiest way of ordering these is to just one of the M3 nylon standoff kits on ebay, AliExpress or any similar sites. That way you'll get more than what you need in various sizes for future projects as well. Check out [faceplate](https://github.com/tebl/ZX-Interface-2.021/tree/main/faceplates) section of this repository or [PCBWay shared projects](https://www.pcbway.com/project/shareproject/?tag=ZX%20Interface%202.021) for available options.
 
-**) The easiest way of ordering these is to just one of the M3 nylon standoff kits on ebay, AliExpress or any similar sites. That way you'll get more than what you need in various sizes for future projects as well.
+**) Only a single (E)EPROM is required to build a cartridge, components U2 and C2 are therefore listed as optional. Installing 28-pin wide DIP sockets is highly recommended rather than soldering the (E)EPROM directly to the board.
