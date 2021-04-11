@@ -126,8 +126,8 @@ Most parts should be easy to get a hold of from your favourite local electronic 
 
 | Reference             | Item                                                              | Count | Order  |
 | --------------------- | ----------------------------------------------------------------- | ----- | ------ |
-| Cartridge PCB         | Fabricate using Gerber files                                      |     1 | PCBWay
-| Faceplate PCB *       | Fabricate using Gerber files                                      |    (1)| PCBWay
+| Interface PCB         | Fabricate using Gerber files                                      |     1 | [PCBWay](https://www.pcbway.com/project/shareproject/ZX_Interface_2_021.html)
+| Faceplate PCB *       | Fabricate using Gerber files                                      |    (1)| [PCBWay](https://www.pcbway.com/project/shareproject/ZX_Interface_2_021__Faceplate_FA1_.html)
 | C1-C4,C6-C8           | 100nF ceramic capacitor (5mm pin spacing)                         |     6 |
 | C5                    | 10uF 25v electrolytic capacitor (2mm pin spacing)                 |    (1)|
 | D11                   | 5mm LED, preferably one that is frosted                           |     1 |

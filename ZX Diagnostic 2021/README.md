@@ -92,8 +92,8 @@ Most parts should be easy to get a hold of from your favourite local electronic 
 
 | Reference             | Item                                                              | Count | Order  |
 | --------------------- | ----------------------------------------------------------------- | ----- | ------ |
-| Cartridge PCB         | Fabricate using Gerber files                                      |     1 | PCBWay
-| Faceplate PCB *       | Fabricate using Gerber files                                      |    (1)| PCBWay
+| Cartridge PCB         | Fabricate using Gerber files                                      |     1 | [PCBWay](https://www.pcbway.com/project/shareproject/ZX_Diagnostic_2_021.html)
+| Faceplate PCB *       | Fabricate using Gerber files                                      |    (1)| [PCBWay](https://www.pcbway.com/project/shareproject/ZX_Diagnostic_2_021__Faceplate_FA1_.html)
 | JP1 **                | 2pin right-angle pin-header (with jumper cap)                     |    (1)|
 | U1                    | 27C128,27C256 or 27C512 (W27C512 recommended)                     |     1 |
 | U2 **                 | 74HCT374 (DIP-20)                                                 |    (1)|
