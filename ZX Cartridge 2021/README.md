@@ -36,10 +36,12 @@ There are two solder jumpers on the right side of the cartridge, these are clear
 
 A completed unit with the jumpers soldered in for the installed 27C512 chip can be seen below, this is mainly all there is to it. The rest of the components that are usually associated with ZX Spectrum cartridges are integrated into the *ZX Interface 2.021* instead - meaning you can quickly solder together all the cartridges you'll ever need in just a few minutes.
 
-![ZX Cartridge 2.021](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_cartridge_004.jpg)
+![Build cartridge 004](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_cartridge_004.jpg)
 
 ## 1.2> Assembling the unit
 There isn't all that much that can be said for assembling the unit, chances are you've already finished the entire thing by this point. The only remaining step would just be to add a [faceplate](https://github.com/tebl/ZX-Interface-2.021/tree/main/faceplates), it helps keep the cartridge from flopping around in the cartridge slot while adding quite a bit of visual flair to it.
+
+![Build cartridge 005](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_cartridge_005.jpg)
 
 The faceplate is just a simple PCB, the suggested way of attaching it is by using components found in cheap *M3 nylon hex* kits. It will look at its best when using an 8mm nylon hex standoff (F-F), then adding screws from both sides. If, on the other hand, you want to stay within the kit - then I suggest using the 8mm M-F standoffs, add M3 nuts on the bottom and snip off the remaining part of the nylon screw that'll poke through. Add screws on top.
 
