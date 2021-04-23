@@ -47,8 +47,8 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 003A-                 29       ; it.
 003A-                 30       ;
 0066                 31                       .NO             $0066
-0066-C3 00 00         32 ( 10) RST_66: JP              RESET
-0069-ED 45            33 ( 14)                 RETN
+0066-C3 00 00         32 ( 10) RST_66: JP              RESET                   ; Jump to the regular RESET routine
+0069-ED 45            33 ( 14)                 RETN                                    ; We won't get here.
 006B-                 34
 006B-                 35       ;
 006B-                 36       ; Main program, relocated here to stay clear of the ROM space associated with

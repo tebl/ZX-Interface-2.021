@@ -752,8 +752,6 @@ ERR_TITLE:
 ERR_MSG:
 		.AS		" \"Cartridge bank not switched out as expected. Software for"
 		.AZ		" use with ZX Interface 2.021 or compatible hardware.\""
-; NAME	.AZ		" ZX Basic"
-; NAME	.AZ		"        Cartridge Loader       "
 
 		.NO		$7400
 FONT_SYMBOLS:
