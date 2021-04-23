@@ -1,9 +1,4 @@
-KEY_WIDTH = 20
-SCR_SIZE = 0x1B00
-ROM_SIZE = 0x4000
-TITLE_FORMAT_INDENT = 0
-TITLE_FORMAT_CENTER = 1
-INDENT = '  '
+from constants import *
 
 def format_hex(value, pad_length = 4):
     '''

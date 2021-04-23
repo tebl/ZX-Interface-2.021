@@ -171,6 +171,10 @@ class CartridgeFile:
 
                 # Replace boot screen with a new one
                 self.file_add_boot_screen(input_file, output_file)
+                
+                # Replace default fonts
+                self.file_fast_forward(selector_address(0x7500), input_file, output_file)
+                self.file_add_fonts(input_file, output_file)
 
                 # Write cartridge and slot titles at $7C00
                 self.file_fast_forward(selector_address(0x7C00), input_file, output_file)
@@ -247,6 +251,35 @@ class CartridgeFile:
         if self.have_setting('BootScreen'):
             return self.get_source_file('BootScreen')
         return None
+
+    def file_add_fonts(self, input_file, output_file, indent_count=2):
+        self.file_add_font('Font1', input_file, output_file, indent_count)
+        self.file_add_font('Font2', input_file, output_file, indent_count)
+    
+    def file_add_font(self, key, input_file, output_file, indent_count=2):
+        font_path = self.get_font_path(key)
+        if font_path == None:
+            self.file_fast_forward(input_file.tell() + FONT_SIZE, input_file, output_file)
+        else:
+            print_result(f"Copy <{key}>", font_path, '...', indent_count)
+            num_bytes = self.file_inject_font(font_path, input_file, output_file, indent_count + 1)
+            pad_bytes = self.file_write_padding(num_bytes, FONT_SIZE, output_file, indent_count + 1)
+            print_result(f"Copy <{key}>", format_number(num_bytes + pad_bytes, format='human'), 'END', indent_count)
+
+    def get_font_path(self, key):
+        if self.have_setting(key):
+            font_path = os.path.join('fonts', f"font_{self.setting(key).strip().lower()}.bin")
+            if os.path.isfile(font_path):
+                return font_path
+        return None
+
+    def file_inject_font(self, font_path, input_file, output_file, indent_count=2):
+        num_bytes = self.file_inject(FONT_SIZE, font_path, input_file, output_file, indent_count + 1)
+        if num_bytes < 768 or num_bytes > FONT_SIZE:
+            raise RuntimeError(f"Font file was wrong size ({font_path}, {format_number(num_bytes, format='human')})")
+        print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count)
+        return num_bytes
+
 
     def file_add_slot_titles(self, input_file, output_file, indent_count=2):
         '''
@@ -325,7 +358,7 @@ class CartridgeFile:
         num_bytes = self.file_copy_into(ROM_SIZE, rom_path, output_file)
         print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count + 1)
         pad_bytes = self.file_write_padding(num_bytes, ROM_SIZE, output_file, indent_count + 1)
-        print_result('Copy <ROM>', format_number(num_bytes + pad_bytes), 'END', indent_count)
+        print_result('Copy <ROM>', format_number(num_bytes + pad_bytes, format='human'), 'END', indent_count)
 
     def file_write_padding(self, num_bytes, expected_bytes, output_file, indent_count=2, pad_value=255):
         padding = bytes([pad_value]) * (expected_bytes - num_bytes)
@@ -346,7 +379,7 @@ class CartridgeFile:
         num_bytes = self.file_inject(SCR_SIZE, scr_path, input_file, output_file, indent_count + 1)
         if num_bytes != SCR_SIZE:
             raise RuntimeError(f"SCR file was wrong size ({scr_path}, {num_bytes} bytes)")
-        print_result('Inject <SCR>', format_number(num_bytes), 'OK', indent_count)
+        print_result('Inject <SCR>', format_number(num_bytes, format='human'), 'OK', indent_count)
         return
     
     def file_inject(self, num_bytes, inject_path, input_file, output_file, indent_count=2):
@@ -374,7 +407,9 @@ class CartridgeFile:
         self.verify_section('Cartridge')
         self.verify_cartridge_title()
         if self.have_setting('BootScreen'):
-            self.verify_file('BootScreen')    
+            self.verify_file('BootScreen')
+        self.verify_font('Font1')
+        self.verify_font('Font2')
         
         if self.verify_chip_count():
             for chip_id in self.get_chips():
@@ -426,6 +461,20 @@ class CartridgeFile:
     def verify_cartridge_title(self):
         print_result('Title', self.get_cartridge_title(), 'OK', indent_count=2)
         return True
+        
+    def verify_font(self, key, indent_count=2):
+        '''
+        Verifies that the font specified corresponds to an existing file, we'll
+        look for it in the fonts directory - it's expected to have a name such
+        as font_<name>.bin (all lowercase).
+        '''
+        if self.have_setting(key):
+            path = self.get_font_path(key)
+            if path != None and os.path.isfile(path):
+                print_result(key, self.setting(key), 'OK', indent_count)
+                return True
+        print_result(key, 'Missing!', 'ERR', indent_count)
+        return False
 
     def verify_chip(self, chip_id):
         for slot_id in self.get_slots(chip_id):
