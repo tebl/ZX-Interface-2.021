@@ -21,8 +21,7 @@ CUR_IDX	.EQU	VARS+3			; Index for title selected
 LAST_K	.EQU	VARS+4			; Last key value in case we need it
 SLOTS	.EQU	VARS+5			; Number of slots available
 
-MAIN:	DI						; Disable interrupts	
-		CALL	GET_SLOT_COUNT	; Calculate SLOTS value
+MAIN:	CALL	GET_SLOT_COUNT	; Calculate SLOTS value
 		CALL	RESET_CURSOR	; Reset cursor
 		LD		BC,$0400		; Set up the custom delay routine, 
 		LD		DE,$0100		;  mainly so that we have time to

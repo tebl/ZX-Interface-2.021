@@ -25,59 +25,96 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 6000-                  7       TARGET  .EQU    $6000                   ; Payload target RAM start
 2000-                  8       SZ_RAM  .EQU    $2000                   ; Maximum payload size
 0000-                  9
-0000-21 00 05         10 ( 10) MAIN:   LD              HL,BOOT_SCREEN  ; Set location of boot screen data
-0003-CD 18 00         11 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
-0006-CD 0C 00         12 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
-0009-C3 00 60         13 ( 10)                 JP              TARGET                  ; Start execution of payload program.
-000C-                 14
-000C-                 15       COPY_TO_RAM:
-000C-21 00 20         16 ( 10)                 LD              HL,PAYLOAD              ; Set source location
-000F-01 00 20         17 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
-0012-11 00 60         18 ( 10)                 LD              DE,TARGET               ; Set target location
-0015-ED B0            19 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
-0017-C9               20 ( 10)                 RET
-0018-                 21
-0018-                 22       LIB_SCR:                                                ; Routines for copying SCR into screen memory
-0018-                 23                       .IN             lib_scr.asm
-0018-            I     1       ;
-0018-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
-0018-            I     3       ; screen memory as well as corresponding attribute data. HL points
-0018-            I     4       ; to start of data.
-0018-            I     5       ;
-0018-            I     6       SHOW_SCR:
-0018-D5          I     7 ( 11)                 PUSH    DE
-0019-DD E5       I     8 ( 15)                 PUSH    IX
-001B-F5          I     9 ( 11)                 PUSH    AF
-001C-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
-0020-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
-0023-            I    12       NEXT_BYTE:
-0023-7E          I    13 (  7)                 LD              A,(HL)
-0024-23          I    14 (  6)                 INC             HL
-0025-            I    15
-0025-DD 77 00    I    16 ( 19)                 LD              (IX),A
-0028-DD 23       I    17 ( 10)                 INC             IX
-002A-            I    18
-002A-1B          I    19 (  6)                 DEC             DE
-002B-7A          I    20 (  4)                 LD              A,D
-002C-B3          I    21 (  4)                 OR              E
-002D-C2 23 00    I    22 ( 10)                 JP              NZ,NEXT_BYTE
-0030-F1          I    23 ( 10)                 POP             AF
-0031-DD E1       I    24 ( 14)                 POP             IX
-0033-D1          I    25 ( 10)                 POP             DE
-0034-C9          I    26 ( 10)                 RET
-0035-                 24
-0400                 25                       .NO             $0400
-0400-                 26       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
+0000-                 10       ;
+0000-                 11       ; This is the main program entrypoint when first starting up, also run when
+0000-                 12       ; the user hits the reset button on the interface.
+0000-                 13       ;
+0000-F3               14 (  4) RESET:  DI                                              ; Disable interrupts
+0001-C3 00 01         15 ( 10)                 JP              MAIN
+0004-                 16
+0004-                 17       ;
+0004-                 18       ; This is the standard maskable interrupt entrypoint that is normally used
+0004-                 19       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
+0004-                 20       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
+0004-                 21       ;
+0038                 22                       .NO             $0038
+0038-ED 4D            23 ( 14) RST_38: RETI
+003A-                 24
+003A-                 25       ;
+003A-                 26       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
+003A-                 27       ; this needs to be here so that pushing the NMI button on the interface doesn't
+003A-                 28       ; simply crash the code - it'll jump here, expecting the code to be ready for
+003A-                 29       ; it.
+003A-                 30       ;
+0066                 31                       .NO             $0066
+0066-C3 00 00         32 ( 10) RST_66: JP              RESET
+0069-ED 45            33 ( 14)                 RETN
+006B-                 34
+006B-                 35       ;
+006B-                 36       ; Main program, relocated here to stay clear of the ROM space associated with
+006B-                 37       ; the various interrupts. The code will run only once; copying the boot screen
+006B-                 38       ; into the screen memory, copy the payload program ("selector program") from
+006B-                 39       ; payload to a RAM location and then start it from there.
+006B-                 40       ;
+0100                 41                       .NO             $0100
+0100-21 00 05         42 ( 10) MAIN:   LD              HL,BOOT_SCREEN  ; Set location of boot screen data
+0103-CD 18 01         43 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
+0106-CD 0C 01         44 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
+0109-C3 00 60         45 ( 10)                 JP              TARGET                  ; Start execution of payload program.
+010C-                 46
+010C-                 47       ;
+010C-                 48       ; Copy the payload program, usually the "selector" program, into RAM. Given
+010C-                 49       ; that we want to avoid using more RAM than is available on the 16K version of
+010C-                 50       ; the ZX Spectrum we'll limit the program size to 8K.
+010C-                 51       ;
+010C-                 52       COPY_TO_RAM:
+010C-21 00 20         53 ( 10)                 LD              HL,PAYLOAD              ; Set source location
+010F-01 00 20         54 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
+0112-11 00 60         55 ( 10)                 LD              DE,TARGET               ; Set target location
+0115-ED B0            56 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
+0117-C9               57 ( 10)                 RET
+0118-                 58
+0118-                 59       LIB_SCR:                                                ; Routines for copying SCR into screen memory
+0118-                 60                       .IN             lib_scr.asm
+0118-            I     1       ;
+0118-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
+0118-            I     3       ; screen memory as well as corresponding attribute data. HL points
+0118-            I     4       ; to start of data.
+0118-            I     5       ;
+0118-            I     6       SHOW_SCR:
+0118-D5          I     7 ( 11)                 PUSH    DE
+0119-DD E5       I     8 ( 15)                 PUSH    IX
+011B-F5          I     9 ( 11)                 PUSH    AF
+011C-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
+0120-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
+0123-            I    12       NEXT_BYTE:
+0123-7E          I    13 (  7)                 LD              A,(HL)
+0124-23          I    14 (  6)                 INC             HL
+0125-            I    15
+0125-DD 77 00    I    16 ( 19)                 LD              (IX),A
+0128-DD 23       I    17 ( 10)                 INC             IX
+012A-            I    18
+012A-1B          I    19 (  6)                 DEC             DE
+012B-7A          I    20 (  4)                 LD              A,D
+012C-B3          I    21 (  4)                 OR              E
+012D-C2 23 01    I    22 ( 10)                 JP              NZ,NEXT_BYTE
+0130-F1          I    23 ( 10)                 POP             AF
+0131-DD E1       I    24 ( 14)                 POP             IX
+0133-D1          I    25 ( 10)                 POP             DE
+0134-C9          I    26 ( 10)                 RET
+0135-                 61
+0400                 62                       .NO             $0400
+0400-                 63       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
 0400-5A 58 20 49 
      6E 74 65 72 
      66 61 63 65 
      20 32 2E 30 
-     32 31 00         27                       .AZ             "ZX Interface 2.021"
-0413-                 28
-0500                 29                       .NO             $0500
-0500-                 30       BOOT_SCREEN:
-0500-                 31                       .BI             boot.scr
-2000-                 32
-2000-                 33                       .NO             $2000
-2000-                 34       PAYLOAD:
-2000-                 35                       .BI             selector.bin
+     32 31 00         64                       .AZ             "ZX Interface 2.021"
+0413-                 65
+0500                 66                       .NO             $0500
+0500-                 67       BOOT_SCREEN:
+0500-                 68                       .BI             boot.scr
+2000-                 69
+2000-                 70                       .NO             $2000
+2000-                 71       PAYLOAD:
+2000-                 72                       .BI             selector.bin
