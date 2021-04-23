@@ -262,9 +262,9 @@ READ_INPUT:
 		PUSH	BC
 		LD		BC,KR_09876		; Keys 6 through 0
 		CALL	READ_ROW		; Read row,
-		CP		$1F				;  are no keys pressed?
-		JR		Z,.CHK_Q		; Yes, we go check Q instead.
-		CALL	HANDLE_KEY		; No, we'll need to process the key.
+		CP		$1F				;  check if no keys are pressed?
+		JR		Z,.CHK_Q		; Yes, so we go check Q instead.
+		CALL	HANDLE_KEY		; No, so we'll need to process the key.
 		JR		.DONE			; We don't want to do anything more.
 .CHK_Q:	LD		BC,KR_QWERT		; Check for Q key
 		CALL	READ_ROW		; Read corresponding keyboard row.
@@ -293,14 +293,10 @@ READ_ROW:
 HANDLE_KEY:
 		PUSH	DE
 		LD		(LAST_K),A		; Store key for later
-		; LD		DE, $4000
-.AGAIN:	CALL	READ_ROW		; Read row again, and then
+.AGAIN:	CALL	KEY_DELAY
+		CALL	READ_ROW		; Read row again, and then
 		CP		$1F				;  check if all keys released.
 		JR		Z,.RELEASED		; Yes, so go do something.
-		; DEC		DE				; No, so we need to keep waiting.
-		; LD		A,D				; Decrementing DE does not set Z-flag, so we'll
-		; OR		E				;  need to do some quirkiness to get it in there.
-		; JR		Z,.RELEASED		; Key repeat once we reach 0.
 		JR		.AGAIN
 .RELEASED:
 		POP		DE
@@ -376,17 +372,12 @@ PRESS_FIRE:
 		RL		B
 		ADD		B				; Add slot number to it
 
-		; LD		HL,$0016		; Display resulting CS
-		; CALL	SET_CURSOR
-		; CALL	SET_ATTR_ROW
-
 		CALL	SET_BANK
 
 		POP		DE
 		POP		HL
 		POP		BC
 		POP		AF
-		; CALL	SET_BANK		; Configure bank switching.
 		RET						; We should never be able to get here.
 
 ;
@@ -444,6 +435,7 @@ GET_BANK_IDENTIFIER:
 ; match 'Z' and 'X'.
 ;
 SET_BANK:
+		DI						; Disable interrupts
 		LD		C,CONTROL_LED	; Controls LEDs found on ZX Diagnostic 2.021
 		OUT		(C),A			;  so let's just write the value to it.
 		LD		C,CONTROL_BANK	; Port used for controlling the bank switching

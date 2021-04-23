@@ -11,6 +11,17 @@ DELAY:	PUSH	BC
 		POP		BC
 		RET
 
+KEY_DELAY:
+		PUSH	BC
+		PUSH	DE
+		LD		BC,$0055
+		LD		DE,$0055
+		CALL	CUSTOM_DELAY
+		POP		DE
+		POP		BC
+		RET
+
+
 ;
 ; Custom delay routine, uses just about anything to burn as many cycles as
 ; possible. Load BC for an outer loop count, DE for an inner loop to control

@@ -27,55 +27,68 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 0000-                  9
 0000-                 10       ;
 0000-                 11       ; This is the main program entrypoint when first starting up, also run when
-0000-                 12       ; the user hits the reset button on the interface.
-0000-                 13       ;
-0000-F3               14 (  4) RESET:  DI                                              ; Disable interrupts
-0001-C3 00 01         15 ( 10)                 JP              MAIN
-0004-                 16
-0004-                 17       ;
-0004-                 18       ; This is the standard maskable interrupt entrypoint that is normally used
-0004-                 19       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
-0004-                 20       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
-0004-                 21       ;
-0038                 22                       .NO             $0038
-0038-ED 4D            23 ( 14) RST_38: RETI
-003A-                 24
-003A-                 25       ;
-003A-                 26       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
-003A-                 27       ; this needs to be here so that pushing the NMI button on the interface doesn't
-003A-                 28       ; simply crash the code - it'll jump here, expecting the code to be ready for
-003A-                 29       ; it.
-003A-                 30       ;
-0066                 31                       .NO             $0066
-0066-C3 00 00         32 ( 10) RST_66: JP              RESET                   ; Jump to the regular RESET routine
-0069-ED 45            33 ( 14)                 RETN                                    ; We won't get here.
-006B-                 34
-006B-                 35       ;
-006B-                 36       ; Main program, relocated here to stay clear of the ROM space associated with
-006B-                 37       ; the various interrupts. The code will run only once; copying the boot screen
-006B-                 38       ; into the screen memory, copy the payload program ("selector program") from
-006B-                 39       ; payload to a RAM location and then start it from there.
-006B-                 40       ;
-0100                 41                       .NO             $0100
-0100-21 00 05         42 ( 10) MAIN:   LD              HL,BOOT_SCREEN  ; Set location of boot screen data
-0103-CD 18 01         43 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
-0106-CD 0C 01         44 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
-0109-C3 00 60         45 ( 10)                 JP              TARGET                  ; Start execution of payload program.
-010C-                 46
-010C-                 47       ;
-010C-                 48       ; Copy the payload program, usually the "selector" program, into RAM. Given
-010C-                 49       ; that we want to avoid using more RAM than is available on the 16K version of
-010C-                 50       ; the ZX Spectrum we'll limit the program size to 8K.
-010C-                 51       ;
-010C-                 52       COPY_TO_RAM:
-010C-21 00 20         53 ( 10)                 LD              HL,PAYLOAD              ; Set source location
-010F-01 00 20         54 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
-0112-11 00 60         55 ( 10)                 LD              DE,TARGET               ; Set target location
-0115-ED B0            56 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
-0117-C9               57 ( 10)                 RET
-0118-                 58
-0118-                 59       LIB_SCR:                                                ; Routines for copying SCR into screen memory
-0118-                 60                       .IN             lib_scr.asm
+0000-                 12       ; the user hits the reset button on the interface. The rest of the reset
+0000-                 13       ; vectors are simply put here just in case the CPU retains something from
+0000-                 14       ; previously run software.
+0000-                 15       ;
+0000-F3               16 (  4) RESET:  DI                                              ; Disable interrupts
+0001-C3 00 01         17 ( 10)                 JP              MAIN
+0008                 18                       .NO             $0008,$FF
+0008-ED 4D            19 ( 14) RST_08: RETI
+0010                 20                       .NO             $0010,$FF
+0010-ED 4D            21 ( 14) RST_10: RETI
+0018                 22                       .NO             $0018,$FF
+0018-ED 4D            23 ( 14) RST_18: RETI
+0028                 24                       .NO             $0028,$FF
+0028-ED 4D            25 ( 14) RST_28: RETI
+0030                 26                       .NO             $0030,$FF
+0030-ED 4D            27 ( 14) RST_30: RETI
+0032-                 28
+0032-                 29       ;
+0032-                 30       ; This is the standard maskable interrupt entrypoint that is normally used
+0032-                 31       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
+0032-                 32       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
+0032-                 33       ;
+0038                 34                       .NO             $0038,$FF
+0038-F3               35 (  4) RST_38: DI                                              ; Disable interrupts
+0039-ED 4D            36 ( 14)                 RETI
+003B-                 37
+003B-                 38       ;
+003B-                 39       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
+003B-                 40       ; this needs to be here so that pushing the NMI button on the interface doesn't
+003B-                 41       ; simply crash the code - it'll jump here, expecting the code to be ready for
+003B-                 42       ; it.
+003B-                 43       ;
+0066                 44                       .NO             $0066,$FF
+0066-C3 00 00         45 ( 10) RST_66: JP              RESET                   ; Jump to the regular RESET routine
+0069-ED 45            46 ( 14)                 RETN                                    ; We won't get here.
+006B-                 47
+006B-                 48       ;
+006B-                 49       ; Main program, relocated here to stay clear of the ROM space associated with
+006B-                 50       ; the various interrupts. The code will run only once; copying the boot screen
+006B-                 51       ; into the screen memory, copy the payload program ("selector program") from
+006B-                 52       ; payload to a RAM location and then start it from there.
+006B-                 53       ;
+0100                 54                       .NO             $0100,$FF
+0100-21 00 05         55 ( 10) MAIN:   LD              HL,BOOT_SCREEN  ; Set location of boot screen data
+0103-CD 18 01         56 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
+0106-CD 0C 01         57 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
+0109-C3 00 60         58 ( 10)                 JP              TARGET                  ; Start execution of payload program.
+010C-                 59
+010C-                 60       ;
+010C-                 61       ; Copy the payload program, usually the "selector" program, into RAM. Given
+010C-                 62       ; that we want to avoid using more RAM than is available on the 16K version of
+010C-                 63       ; the ZX Spectrum we'll limit the program size to 8K.
+010C-                 64       ;
+010C-                 65       COPY_TO_RAM:
+010C-21 00 20         66 ( 10)                 LD              HL,PAYLOAD              ; Set source location
+010F-01 00 20         67 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
+0112-11 00 60         68 ( 10)                 LD              DE,TARGET               ; Set target location
+0115-ED B0            69 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
+0117-C9               70 ( 10)                 RET
+0118-                 71
+0118-                 72       LIB_SCR:                                                ; Routines for copying SCR into screen memory
+0118-                 73                       .IN             lib_scr.asm
 0118-            I     1       ;
 0118-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
 0118-            I     3       ; screen memory as well as corresponding attribute data. HL points
@@ -102,19 +115,19 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 0131-DD E1       I    24 ( 14)                 POP             IX
 0133-D1          I    25 ( 10)                 POP             DE
 0134-C9          I    26 ( 10)                 RET
-0135-                 61
-0400                 62                       .NO             $0400
-0400-                 63       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
+0135-                 74
+0400                 75                       .NO             $0400
+0400-                 76       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
 0400-5A 58 20 49 
      6E 74 65 72 
      66 61 63 65 
      20 32 2E 30 
-     32 31 00         64                       .AZ             "ZX Interface 2.021"
-0413-                 65
-0500                 66                       .NO             $0500
-0500-                 67       BOOT_SCREEN:
-0500-                 68                       .BI             boot.scr
-2000-                 69
-2000-                 70                       .NO             $2000
-2000-                 71       PAYLOAD:
-2000-                 72                       .BI             selector.bin
+     32 31 00         77                       .AZ             "ZX Interface 2.021"
+0413-                 78
+0500                 79                       .NO             $0500
+0500-                 80       BOOT_SCREEN:
+0500-                 81                       .BI             boot.scr
+2000-                 82
+2000-                 83                       .NO             $2000
+2000-                 84       PAYLOAD:
+2000-                 85                       .BI             selector.bin
