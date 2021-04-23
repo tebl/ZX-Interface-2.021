@@ -14,10 +14,17 @@
 # Autorouter files (exported from Pcbnew)
 .dsn
 
+*.bin
 resources/
 software/Testing
-software/loader/__debug.bat
-software/loader/test.bat
+software/cartridge_loader/__debug.bat
+software/cartridge_loader/test.bat
+software/cartridge_creator/*.bin
+software/cartridge_creator/*.hex
+software/cartridge_creator/cartridges/*
+!software/cartridge_creator/cartridges/blank/
+
+
 faceplates/ZX Cartridge 2021 FA2 Hungry Horace/
 faceplates/ZX Cartridge 2021 FA3 Horace and the Spiders/
 faceplates/ZX Cartridge 2021 FA4 Jet Pac/

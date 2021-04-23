@@ -1,0 +1,2 @@
+call assemble.bat
+pause
