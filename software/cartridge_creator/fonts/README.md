@@ -1,0 +1,4 @@
+# Fonts
+One of the joys of developing a cartridge for the ZX Spectrum, at least attempting to do so, is the joys of the standard ROM disappearing from memory the second you plug it in. That means that all of the ready-made function calls, display routines and even the standard font is gone the second you plug it in - by design! This means that I needed a font for displaying some simple text, not having the inclination to manually draw any parts of the character set means looking for solutions already created.
+
+Jim Blimey already did that for the ZX Spectrum, it's all detailed over on his blog at [www,jimblimey.com/blog/24-zx-spectrum-fonts](https://www.jimblimey.com/blog/24-zx-spectrum-fonts/). He did the work of converting [epto-fonts](https://github.com/epto/epto-fonts/) to assembly code, which I later converted to fit my particular choice of assembler. Check out the blog post for pictures of what each font actually looks like.
