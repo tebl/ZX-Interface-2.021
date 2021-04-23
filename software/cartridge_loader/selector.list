@@ -901,12 +901,10 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
      61 72 64 77 
      61 72 65 2E 
      22 00           754                       .AZ             " use with ZX Interface 2.021 or compatible hardware.\""
-64B2-                755       ; NAME  .AZ             " ZX Basic"
-64B2-                756       ; NAME  .AZ             "        Cartridge Loader       "
-64B2-                757
-7400                758                       .NO             $7400
-7400-                759       FONT_SYMBOLS:
-7400-                760                       .IN             font_symbols.asm
+64B2-                755
+7400                756                       .NO             $7400
+7400-                757       FONT_SYMBOLS:
+7400-                758                       .IN             font_symbols.asm
 7400-            I     1               ; 00 (DOWN arrow)
 7400-00          I     2               .db     %00000000
 7401-FF          I     3               .db     %11111111
@@ -1006,12 +1004,12 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 744D-0A          I    97               .db     %00001010
 744E-0A          I    98               .db     %00001010
 744F-0A          I    99               .db     %00001010
-7500                761                       .NO             $7500,$FF
-7500-                762       FONT1:  .BI             font_computer.bin
-7830                763                       .NO             $7830,$FF
-7830-                764       FONT2:  .BI             font_msx.bin
-7B30-                765
-7C00                766                       .NO             $7C00,$FF
+7500                759                       .NO             $7500,$FF
+7500-                760       FONT1:  .BI             font_computer.bin
+7830                761                       .NO             $7830,$FF
+7830-                762       FONT2:  .BI             font_msx.bin
+7B30-                763
+7C00                764                       .NO             $7C00,$FF
 7C00-20 20 20 20 
      20 20 20 20 
      43 61 72 74 
@@ -1019,61 +1017,61 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
      65 20 4C 6F 
      61 64 65 72 
      20 20 20 20 
-     20 20 20 00     767       TITLE0  .AZ             "        Cartridge Loader       "
-7C20-                768                       .NO             $7C20,$00
+     20 20 20 00     765       TITLE0  .AZ             "        Cartridge Loader       "
+7C20-                766                       .NO             $7C20,$00
 7C20-20 4E 61 6D 
-     65 20 31 00     769       TITLE1: .AZ             " Name 1"
-7C40                770                       .NO             $7C40,$00
+     65 20 31 00     767       TITLE1: .AZ             " Name 1"
+7C40                768                       .NO             $7C40,$00
 7C40-20 4E 61 6D 
-     65 20 32 00     771       TITLE2: .AZ             " Name 2"
-7C60                772                       .NO             $7C60,$00
+     65 20 32 00     769       TITLE2: .AZ             " Name 2"
+7C60                770                       .NO             $7C60,$00
 7C60-20 4E 61 6D 
-     65 20 33 00     773       TITLE3: .AZ             " Name 3"
-7C80                774                       .NO             $7C80,$00
+     65 20 33 00     771       TITLE3: .AZ             " Name 3"
+7C80                772                       .NO             $7C80,$00
 7C80-20 4E 61 6D 
-     65 20 34 00     775       TITLE4: .AZ             " Name 4"
-7CA0                776                       .NO             $7CA0,$00
+     65 20 34 00     773       TITLE4: .AZ             " Name 4"
+7CA0                774                       .NO             $7CA0,$00
 7CA0-20 4E 61 6D 
-     65 20 35 00     777       TITLE5: .AZ             " Name 5"
-7CC0                778                       .NO             $7CC0,$00
+     65 20 35 00     775       TITLE5: .AZ             " Name 5"
+7CC0                776                       .NO             $7CC0,$00
 7CC0-20 4E 61 6D 
-     65 20 36 00     779       TITLE6: .AZ             " Name 6"
-7CE0                780                       .NO             $7CE0,$00
+     65 20 36 00     777       TITLE6: .AZ             " Name 6"
+7CE0                778                       .NO             $7CE0,$00
 7CE0-20 4E 61 6D 
-     65 20 37 00     781       TITLE7: .AZ             " Name 7"
-7D00                782                       .NO             $7D00,$00
+     65 20 37 00     779       TITLE7: .AZ             " Name 7"
+7D00                780                       .NO             $7D00,$00
 7D00-20 4E 61 6D 
-     65 20 38 00     783       TITLE8: .AZ             " Name 8"
-7D20                784                       .NO             $7D20,$00
+     65 20 38 00     781       TITLE8: .AZ             " Name 8"
+7D20                782                       .NO             $7D20,$00
 7D20-20 4E 61 6D 
-     65 20 39 00     785       TITLE9: .AZ             " Name 9"
-7D40                786                       .NO             $7D40,$00
-7D40-                787       TITLE10:
+     65 20 39 00     783       TITLE9: .AZ             " Name 9"
+7D40                784                       .NO             $7D40,$00
+7D40-                785       TITLE10:
 7D40-20 4E 61 6D 
-     65 20 41 00     788                       .AZ             " Name A"
-7D60                789                       .NO             $7D60,$00
-7D60-                790       TITLE11:
+     65 20 41 00     786                       .AZ             " Name A"
+7D60                787                       .NO             $7D60,$00
+7D60-                788       TITLE11:
 7D60-20 4E 61 6D 
-     65 20 42 00     791                       .AZ             " Name B"
-7D80                792                       .NO             $7D80,$00
-7D80-                793       TITLE12:
+     65 20 42 00     789                       .AZ             " Name B"
+7D80                790                       .NO             $7D80,$00
+7D80-                791       TITLE12:
 7D80-20 4E 61 6D 
-     65 20 43 00     794                       .AZ             " Name C"
-7DA0                795                       .NO             $7DA0,$00
-7DA0-                796       TITLE13:
+     65 20 43 00     792                       .AZ             " Name C"
+7DA0                793                       .NO             $7DA0,$00
+7DA0-                794       TITLE13:
 7DA0-20 4E 61 6D 
-     65 20 44 00     797                       .AZ             " Name D"
-7DC0                798                       .NO             $7DC0,$00
-7DC0-                799       TITLE14:
+     65 20 44 00     795                       .AZ             " Name D"
+7DC0                796                       .NO             $7DC0,$00
+7DC0-                797       TITLE14:
 7DC0-20 4E 61 6D 
-     65 20 45 00     800                       .AZ             " Name E"
-7DE0                801                       .NO             $7DE0,$00
-7DE0-                802       TITLE15:
+     65 20 45 00     798                       .AZ             " Name E"
+7DE0                799                       .NO             $7DE0,$00
+7DE0-                800       TITLE15:
 7DE0-20 4E 61 6D 
-     65 20 46 00     803                       .AZ             " Name F"
-7FFC                804                       .NO             $7FFC,$00
-7FFC-                805       SLOT_COUNT:
-7FFC-03              806                       .DB             3
-7FFD-00              807                       .DB             0
-7FFE-00              808                       .DB             0
-7FFF-00              809                       .DB             0
+     65 20 46 00     801                       .AZ             " Name F"
+7FFC                802                       .NO             $7FFC,$00
+7FFC-                803       SLOT_COUNT:
+7FFC-03              804                       .DB             3
+7FFD-00              805                       .DB             0
+7FFE-00              806                       .DB             0
+7FFF-00              807                       .DB             0
