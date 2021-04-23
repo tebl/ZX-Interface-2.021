@@ -757,9 +757,9 @@ ERR_MSG:
 FONT_SYMBOLS:
 		.IN		font_symbols.asm
 		.NO		$7500,$FF
-FONT1:	.BI		font_computer.bin
+FONT1:	.BI		font1.bin
 		.NO		$7830,$FF
-FONT2:	.BI		font_msx.bin
+FONT2:	.BI		font2.bin
 
 		.NO		$7C00,$FF
 TITLE0	.AZ		"        Cartridge Loader       "

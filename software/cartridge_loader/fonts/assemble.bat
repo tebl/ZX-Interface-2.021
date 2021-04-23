@@ -1,0 +1,24 @@
+@echo off
+if not exist font_a1.bin sbasm.py font_a1.asm
+if not exist font_bolder.bin sbasm.py font_bolder.asm
+if not exist font_border.bin sbasm.py font_border.asm
+if not exist font_cartoon.bin sbasm.py font_cartoon.asm
+if not exist font_cga.bin sbasm.py font_cga.asm
+if not exist font_computer.bin sbasm.py font_computer.asm
+if not exist font_corsivo.bin sbasm.py font_corsivo.asm
+if not exist font_cp850.bin sbasm.py font_cp850.asm
+if not exist font_digital.bin sbasm.py font_digital.asm
+if not exist font_got_bold.bin sbasm.py font_got_bold.asm
+if not exist font_fant8.bin sbasm.py font_fant8.asm
+if not exist font_figo1.bin sbasm.py font_figo1.asm
+if not exist font_minimal.bin sbasm.py font_minimal.asm
+if not exist font_military.bin sbasm.py font_military.asm
+if not exist font_msx.bin sbasm.py font_msx.asm
+if not exist font_negative.bin sbasm.py font_negative.asm
+if not exist font_roman.bin sbasm.py font_roman.asm
+if not exist font_rotated.bin sbasm.py font_rotated.asm
+if not exist font_round.bin sbasm.py font_round.asm
+if not exist font_runi.bin sbasm.py font_runi.asm
+if not exist font_square.bin sbasm.py font_square.asm
+if not exist font_thin.bin sbasm.py font_thin.asm
+if not exist font_tiny.bin sbasm.py font_tiny.asm

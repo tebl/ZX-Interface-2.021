@@ -1005,9 +1005,9 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 744E-0A          I    98               .db     %00001010
 744F-0A          I    99               .db     %00001010
 7500                759                       .NO             $7500,$FF
-7500-                760       FONT1:  .BI             font_computer.bin
+7500-                760       FONT1:  .BI             font1.bin
 7830                761                       .NO             $7830,$FF
-7830-                762       FONT2:  .BI             font_msx.bin
+7830-                762       FONT2:  .BI             font2.bin
 7B30-                763
 7C00                764                       .NO             $7C00,$FF
 7C00-20 20 20 20 
