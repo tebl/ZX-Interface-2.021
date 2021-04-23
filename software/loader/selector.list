@@ -1,0 +1,1080 @@
+6000-                  4                       .OR             $6000
+6000-                  5
+6000-                  6                       .IN             constants.asm   ; Constants
+4000-            I     1       SCREEN                  .EQU    $4000                   ; 16384
+1800-            I     2       SZ_SCRN                 .EQU    $1800                   ; 6144  256*192 pixels, 8-pixels per byte
+5800-            I     3       ATTR                    .EQU    $5800                   ; 22528
+0300-            I     4       SZ_ATTR                 .EQU    $300                    ; 768   32*24 8-pixel blocks
+0060-            I     5       SZ_FONT                 .EQU    $60                             ; 96
+5CC0-            I     6       VARS                    .EQU    $5CC0                   ; 23744, used as start of variable space
+0400-            I     7       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
+6000-            I     8
+001F-            I     9       CONTROL_BANK    .EQU    31                              ; ZX Interface 2.021 bank control port
+003F-            I    10       CONTROL_LED             .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
+6000-            I    11
+6000-            I    12       ; Keyboard row definitions
+6000-            I    13       ;                                        Bit     0   1 2 3 4
+FEFE-            I    14       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
+FBFE-            I    15       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
+FDFE-            I    16       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
+F7FE-            I    17       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
+EFFE-            I    18       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
+DFFE-            I    19       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
+BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
+7FFE-            I    21       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
+6000-                  7                       .IN             attributes.asm  ; Attribute definitions
+0000-            I     1       A_BLACK         .EQU    %00000000
+0001-            I     2       A_BLUE          .EQU    %00000001
+0002-            I     3       A_RED           .EQU    %00000010
+0003-            I     4       A_MAGENTA       .EQU    %00000011
+0004-            I     5       A_GREEN         .EQU    %00000100
+0005-            I     6       A_CYAN          .EQU    %00000101
+0006-            I     7       A_YELLOW        .EQU    %00000110
+0007-            I     8       A_WHITE         .EQU    %00000111
+6000-            I     9
+0000-            I    10       A_P_BLACK       .EQU    A_BLACK<<3
+0008-            I    11       A_P_BLUE        .EQU    A_BLUE<<3
+0010-            I    12       A_P_RED         .EQU    A_RED<<3
+0018-            I    13       A_P_MAGENTA     .EQU    A_MAGENTA<<3
+0020-            I    14       A_P_GREEN       .EQU    A_GREEN<<3
+0028-            I    15       A_P_CYAN        .EQU    A_CYAN<<3
+0030-            I    16       A_P_YELLOW      .EQU    A_YELLOW<<3
+0038-            I    17       A_P_WHITE       .EQU    A_WHITE<<3
+6000-            I    18
+0040-            I    19       A_BRIGHT        .EQU    %01000000
+0080-            I    20       A_FLASH         .EQU    %10000000
+6000-                  8
+0047-                  9       C_DEF   .EQU    A_P_BLACK|A_WHITE|A_BRIGHT
+0047-                 10       C_TITLE .EQU    A_P_BLACK|A_WHITE|A_BRIGHT
+0007-                 11       C_NAME  .EQU    A_P_BLACK|A_WHITE
+0007-                 12       C_TEXT  .EQU    A_P_BLACK|A_WHITE
+0078-                 13       C_SEL   .EQU    A_P_WHITE|A_BLACK|A_BRIGHT
+0047-                 14       C_HELP  .EQU    A_P_BLACK|A_WHITE|A_BRIGHT
+0042-                 15       C_ERROR .EQU    A_P_BLACK|A_RED|A_BRIGHT
+6000-                 16
+5CC0-                 17       CUR_X   .EQU    VARS+0                  ; Current cursor location on screen, X
+5CC1-                 18       CUR_Y   .EQU    VARS+1                  ;  and Y-location.
+5CC2-                 19       LAST_A  .EQU    VARS+2                  ; Last attribute used when clearing screen
+5CC3-                 20       CUR_IDX .EQU    VARS+3                  ; Index for title selected
+5CC4-                 21       LAST_K  .EQU    VARS+4                  ; Last key value in case we need it
+5CC5-                 22       SLOTS   .EQU    VARS+5                  ; Number of slots available
+6000-                 23
+6000-F3               24 (  4) MAIN:   DI                                              ; Disable interrupts
+6001-CD 43 60         25 ( 17)                 CALL    GET_SLOT_COUNT  ; Calculate SLOTS value
+6004-CD 79 62         26 ( 17)                 CALL    RESET_CURSOR    ; Reset cursor
+6007-01 00 04         27 ( 10)                 LD              BC,$0400                ; Set up the custom delay routine,
+600A-11 00 01         28 ( 10)                 LD              DE,$0100                ;  mainly so that we have time to
+600D-CD 26 60         29 ( 17)                 CALL    CUSTOM_DELAY    ;  actually see loader boot screen.
+6010-CD 72 60         30 ( 17)                 CALL    SELECTOR                ; Show selection screen
+6013-CD 93 61         31 ( 17) .LOOP:  CALL    READ_INPUT              ; Read keyboard
+6016-18 FB            32 ( 12)                 JR              .LOOP                   ; Loop forever.
+6018-                 33
+6018-                 34       LIB_DELAY:
+6018-                 35                       .IN             lib_delay.asm
+6018-            I     1       ;
+6018-            I     2       ; Performs a simple 16-bit delay loop. I've got no idea of the actual timings,
+6018-            I     3       ; but it feels like a little over a second.
+6018-            I     4       ;
+6018-C5          I     5 ( 11) DELAY:  PUSH    BC
+6019-D5          I     6 ( 11)                 PUSH    DE
+601A-01 00 04    I     7 ( 10)                 LD              BC,$0400
+601D-11 00 01    I     8 ( 10)                 LD              DE,$0100
+6020-CD 26 60    I     9 ( 17)                 CALL    CUSTOM_DELAY
+6023-D1          I    10 ( 10)                 POP             DE
+6024-C1          I    11 ( 10)                 POP             BC
+6025-C9          I    12 ( 10)                 RET
+6026-            I    13
+6026-            I    14       ;
+6026-            I    15       ; Custom delay routine, uses just about anything to burn as many cycles as
+6026-            I    16       ; possible. Load BC for an outer loop count, DE for an inner loop to control
+6026-            I    17       ; how much time this routine uses. For the exact timings, someone'd need to
+6026-            I    18       ; count the cycles and divide it by CPU frequency.
+6026-            I    19       ;
+6026-            I    20       CUSTOM_DELAY:
+6026-C5          I    21 ( 11)                 PUSH    BC                              ; Save current registers, mainly because we
+6027-D5          I    22 ( 11)                 PUSH    DE                              ; overwrite just about anything and we need
+6028-F5          I    23 ( 11)                 PUSH    AF                              ; the calling routines to stay working.
+6029-E5          I    24 ( 11)                 PUSH    HL
+602A-7A          I    25 (  4)                 LD              A,D                             ; Let's save the starting value of DE - there's
+602B-67          I    26 (  4)                 LD              H,A                             ; probably an easier way, but that requires
+602C-7B          I    27 (  4)                 LD              A,E                             ; reading.
+602D-6F          I    28 (  4)                 LD              L,A
+602E-7C          I    29 (  4) .OUTER: LD              A,H                             ; Restore initial DE value
+602F-57          I    30 (  4)                 LD              D,A
+6030-7D          I    31 (  4)                 LD              A,L
+6031-5F          I    32 (  4)                 LD              E,A
+6032-1B          I    33 (  6) .INNER: DEC             DE
+6033-7A          I    34 (  4)                 LD              A,D                             ; Decrementing DE does not set Z-flag, so we'll
+6034-B3          I    35 (  4)                 OR              E                               ;  need to do do this. It's a quirk.
+6035-C2 32 60    I    36 ( 10)                 JP              NZ,.INNER               ; If DE not 0, then do inner loop again.
+6038-0B          I    37 (  6)                 DEC             BC                              ; Z-flag. Again.
+6039-78          I    38 (  4)                 LD              A,B
+603A-B1          I    39 (  4)                 OR              C
+603B-C2 2E 60    I    40 ( 10)                 JP              NZ,.OUTER               ; If BE not 0, then do outer loop again.
+603E-E1          I    41 ( 10)                 POP             HL                              ; Restore registers that were overwritten.
+603F-F1          I    42 ( 10)                 POP             AF
+6040-D1          I    43 ( 10)                 POP             DE
+6041-C1          I    44 ( 10)                 POP             BC
+6042-C9          I    45 ( 10)                 RET
+6043-                 36
+6043-                 37       ;
+6043-                 38       ; Performs an initial calculation to figure out how many slots we need to
+6043-                 39       ; display on the screen. There is a maximum of 4 different values to account
+6043-                 40       ; for the four chip selects on cartridge port. CUR_IDX will be a value between
+6043-                 41       ; 1 and this calculated value.
+6043-                 42       ;
+6043-                 43       GET_SLOT_COUNT:
+6043-21 FC 7F         44 ( 10)                 LD              HL,SLOT_COUNT
+6046-06 04            45 (  7)                 LD              B,4
+6048-3E 00            46 (  7)                 LD              A,0
+604A-86               47 (  7) .NEXT:  ADD             (HL)
+604B-23               48 (  6)                 INC             HL
+604C-05               49 (  4)                 DEC             B
+604D-20 FB            50 ( 7+)                 JR              NZ,.NEXT
+604F-32 C5 5C         51 ( 13)                 LD              (SLOTS),A
+6052-C9               52 ( 10)                 RET
+6053-                 53
+6053-                 54       ;
+6053-                 55       ; Error screen display.
+6053-                 56       ;
+6053-3E 42            57 (  7) ERROR:  LD              A,C_ERROR               ; Load error screen attribute definition,
+6055-CD 6F 63         58 ( 17)                 CALL    CLR_BG                  ;  and clear the screen with it.
+6058-                 59
+6058-                 60                       ; Outputs the title block
+6058-11 22 64         61 ( 10)                 LD              DE,ERR_TITLE
+605B-47               62 (  4)                 LD              B,A
+605C-0E C2            63 (  7)                 LD              C,C_ERROR|A_FLASH
+605E-CD C9 60         64 ( 17)                 CALL    TITLE_BOX
+6061-                 65
+6061-                 66                       ; Error message section
+6061-CD 20 63         67 ( 17)                 CALL    SET_FONT2               ; Set regular font
+6064-21 0A 00         68 ( 10)                 LD              HL,$000A
+6067-CD 82 62         69 ( 17)                 CALL    SET_CURSOR
+606A-21 42 64         70 ( 10)                 LD              HL,ERR_MSG
+606D-CD 3E 63         71 ( 17)                 CALL    PUTS
+6070-18 FE            72 ( 12) .LOOP:  JR              .LOOP                   ; Loop forever.
+6072-                 73
+6072-                 74       ;
+6072-                 75       ; Selection screen display
+6072-                 76       ;
+6072-                 77       SELECTOR:
+6072-3E 01            78 (  7)                 LD              A,1                             ; Initialize title index
+6074-32 C3 5C         79 ( 13)                 LD              (CUR_IDX),A             ;  save in RAM for later.
+6077-3E 47            80 (  7)                 LD              A,C_DEF                 ; Get default attribute value
+6079-CD 6F 63         81 ( 17)                 CALL    CLR_BG                  ;  and clear screen with it.
+607C-                 82
+607C-                 83                       ; Outputs the title block
+607C-11 00 7C         84 ( 10)                 LD              DE,TITLE0
+607F-06 47            85 (  7)                 LD              B,C_TITLE
+6081-0E 07            86 (  7)                 LD              C,C_NAME
+6083-CD C9 60         87 ( 17)                 CALL    TITLE_BOX
+6086-                 88
+6086-                 89                       ; Output bank names
+6086-CD 42 61         90 ( 17)                 CALL    UPDATE_TITLES
+6089-                 91
+6089-                 92                       ; Output help section
+6089-3E 47            93 (  7) .HELP:  LD              A,C_HELP
+608B-21 15 00         94 ( 10)                 LD              HL,$0015
+608E-CD 82 62         95 ( 17)                 CALL    SET_CURSOR
+6091-CD E6 62         96 ( 17)                 CALL    SET_ATTR_ROW
+6094-21 16 00         97 ( 10)                 LD              HL,$0016
+6097-CD 82 62         98 ( 17)                 CALL    SET_CURSOR
+609A-CD E6 62         99 ( 17)                 CALL    SET_ATTR_ROW
+609D-                100
+609D-CD 1C 63        101 ( 17)                 CALL    SET_FONT1
+60A0-21 EB 63        102 ( 10)                 LD              HL,MSG_HELP
+60A3-CD 3E 63        103 ( 17)                 CALL    PUTS
+60A6-21 17 00        104 ( 10)                 LD              HL,$0017
+60A9-CD 82 62        105 ( 17)                 CALL    SET_CURSOR
+60AC-CD E6 62        106 ( 17)                 CALL    SET_ATTR_ROW
+60AF-                107                       ; Print symbols over text as those aren't in the default font.
+60AF-11 00 74        108 ( 10)                 LD              DE, FONT_SYMBOLS
+60B2-21 16 04        109 ( 10)                 LD              HL,$0416
+60B5-CD 82 62        110 ( 17)                 CALL    SET_CURSOR
+60B8-3E 00           111 (  7)                 LD              A,0
+60BA-CD FD 62        112 ( 17)                 CALL    SET_SYMBOL
+60BD-21 16 0B        113 ( 10)                 LD              HL,$0B16
+60C0-CD 82 62        114 ( 17)                 CALL    SET_CURSOR
+60C3-3E 01           115 (  7)                 LD              A,1
+60C5-CD FD 62        116 ( 17)                 CALL    SET_SYMBOL
+60C8-C9              117 ( 10)                 RET
+60C9-                118
+60C9-                119       ;
+60C9-                120       ; The title box fiddles around with a lot of symbols to make it look pretty,
+60C9-                121       ; so to avoid copying the code we'll generalize it instead.
+60C9-                122       ;  DE - Load with screen title address
+60C9-                123       ;  B  - Load with title attribute
+60C9-                124       ;  C  - Load with cartridge name attribute
+60C9-                125       ;
+60C9-                126       TITLE_BOX:
+60C9-D5              127 ( 11)                 PUSH    DE                              ; Save DE as it points to the title.
+60CA-78              128 (  4) .TEXT:  LD              A,B                             ; B holds title attribute
+60CB-CD 1C 63        129 ( 17)                 CALL    SET_FONT1               ; Set title font
+60CE-21 01 00        130 ( 10)                 LD              HL,$0001
+60D1-CD 82 62        131 ( 17)                 CALL    SET_CURSOR
+60D4-CD E6 62        132 ( 17)                 CALL    SET_ATTR_ROW
+60D7-21 CA 63        133 ( 10)                 LD              HL,MSG_TITLE
+60DA-CD 3E 63        134 ( 17)                 CALL    PUTS
+60DD-21 02 00        135 ( 10)                 LD              HL,$0002
+60E0-CD 82 62        136 ( 17)                 CALL    SET_CURSOR
+60E3-79              137 (  4)                 LD              A,C                             ; C holds cartridge name style
+60E4-CD E6 62        138 ( 17)                 CALL    SET_ATTR_ROW
+60E7-E1              139 ( 10)                 POP             HL                              ; Restore previously pushed DE to HL
+60E8-CD 3E 63        140 ( 17)                 CALL    PUTS                    ;  and use it to output the string.
+60EB-                141
+60EB-                142       .SYMBOLS:
+60EB-78              143 (  4)                 LD              A,B
+60EC-11 00 74        144 ( 10)                 LD              DE,FONT_SYMBOLS ; Set font to point to the symbols
+60EF-21 00 00        145 ( 10)                 LD              HL,$0000                ; Reset cursor to
+60F2-CD 82 62        146 ( 17)                 CALL    SET_CURSOR              ;  start of the screen.
+60F5-CD E6 62        147 ( 17)                 CALL    SET_ATTR_ROW    ; Update entire row with style.
+60F8-21 88 63        148 ( 10)                 LD              HL,MSG_TB_UPPER
+60FB-CD 51 63        149 ( 17)                 CALL    PUTSS                   ; Print upper title bar
+60FE-21 03 00        150 ( 10)                 LD              HL,$0003
+6101-CD 82 62        151 ( 17)                 CALL    SET_CURSOR
+6104-CD E6 62        152 ( 17)                 CALL    SET_ATTR_ROW
+6107-21 A9 63        153 ( 10)                 LD              HL,MSG_TB_LOWER ; Print lower title bar
+610A-CD 51 63        154 ( 17)                 CALL    PUTSS
+610D-21 01 00        155 ( 10)                 LD              HL,$0001                ; Fix left title bar
+6110-CD 82 62        156 ( 17)                 CALL    SET_CURSOR
+6113-3E 08           157 (  7)                 LD              A,$08
+6115-CD FD 62        158 ( 17)                 CALL    SET_SYMBOL
+6118-21 02 00        159 ( 10)                 LD              HL,$0002
+611B-CD 82 62        160 ( 17)                 CALL    SET_CURSOR
+611E-3E 08           161 (  7)                 LD              A,$08
+6120-CD FD 62        162 ( 17)                 CALL    SET_SYMBOL
+6123-78              163 (  4)                 LD              A,B
+6124-CD DF 62        164 ( 17)                 CALL    SET_ATTR
+6127-21 01 1F        165 ( 10)                 LD              HL,$1F01                ; Fix right title bar
+612A-CD 82 62        166 ( 17)                 CALL    SET_CURSOR
+612D-3E 09           167 (  7)                 LD              A,$09
+612F-CD FD 62        168 ( 17)                 CALL    SET_SYMBOL
+6132-21 02 1F        169 ( 10)                 LD              HL,$1F02
+6135-CD 82 62        170 ( 17)                 CALL    SET_CURSOR
+6138-3E 09           171 (  7)                 LD              A,$09
+613A-CD FD 62        172 ( 17)                 CALL    SET_SYMBOL
+613D-78              173 (  4)                 LD              A,B
+613E-CD DF 62        174 ( 17)                 CALL    SET_ATTR
+6141-C9              175 ( 10) .DONE:  RET
+6142-                176
+6142-                177       ;
+6142-                178       ; Updates the names of titles displayed as well as their attributes. Sort of
+6142-                179       ; slow for just marking the active line, but too lazy to build a separate one
+6142-                180       ; for just the attributes.
+6142-                181       ;
+6142-                182       UPDATE_TITLES:
+6142-F5              183 ( 11)                 PUSH    AF
+6143-C5              184 ( 11)                 PUSH    BC
+6144-CD 20 63        185 ( 17)                 CALL    SET_FONT2
+6147-3A C5 5C        186 ( 13)                 LD              A,(SLOTS)       ; Load number of titles configured.
+614A-47              187 (  4)                 LD              B,A
+614B-78              188 (  4) .NEXT:  LD              A,B
+614C-CD 55 61        189 ( 17)                 CALL    PRINT_TITLE_N
+614F-05              190 (  4)                 DEC             B
+6150-20 F9           191 ( 7+)                 JR              NZ,.NEXT
+6152-C1              192 ( 10)                 POP             BC
+6153-F1              193 ( 10)                 POP             AF
+6154-C9              194 ( 10)                 RET
+6155-                195
+6155-                196       ;
+6155-                197       ; Prints bank titles to their corresponding line number, value in A is used as
+6155-                198       ; bank index.
+6155-                199       ;
+6155-                200       PRINT_TITLE_N:
+6155-E5              201 ( 11)                 PUSH    HL
+6156-F5              202 ( 11)                 PUSH    AF                              ; Store title index
+6157-21 00 00        203 ( 10)                 LD              HL,$0000                ; Start calculation at 0,0
+615A-C6 04           204 (  7)                 ADD             A,4                             ;  add 4 to get screen line to print to,
+615C-6F              205 (  4)                 LD              L,A                             ;  then set this as Y-coordinate.
+615D-CD 82 62        206 ( 17)                 CALL    SET_CURSOR              ; Update cursor
+6160-F1              207 ( 10)                 POP             AF                              ; Get back the original index
+6161-CD 6C 61        208 ( 17)                 CALL    SET_HIGHLIGHT   ; Set background color depending on index
+6164-CD 83 61        209 ( 17)                 CALL    GET_TITLE_ADDR  ; Get title string
+6167-CD 3E 63        210 ( 17)                 CALL    PUTS                    ; Print it.
+616A-E1              211 ( 10)                 POP     HL
+616B-C9              212 ( 10)                 RET
+616C-                213
+616C-                214       ;
+616C-                215       ; With the currently being processed index in A, compare that to the actually
+616C-                216       ; selected bank index. Change attribute data for the entire row to show the
+616C-                217       ; difference.
+616C-                218       ;
+616C-                219       SET_HIGHLIGHT:
+616C-D5              220 ( 11)                 PUSH    DE
+616D-F5              221 ( 11)                 PUSH    AF
+616E-C5              222 ( 11)                 PUSH    BC
+616F-47              223 (  4)                 LD              B,A
+6170-3A C3 5C        224 ( 13)                 LD              A,(CUR_IDX)
+6173-B8              225 (  4)                 CP              A,B                             ; Check if current index?
+6174-20 04           226 ( 7+)                 JR              NZ,.INACTIVE    ;  no, jump to inactive
+6176-3E 78           227 (  7)                 LD              A,C_SEL                 ;  yes, so set attribute style to selected.
+6178-18 02           228 ( 12)                 JR              .SET_ROW
+617A-                229       .INACTIVE:
+617A-3E 07           230 (  7)                 LD              A,C_TEXT
+617C-                231       .SET_ROW:
+617C-CD E6 62        232 ( 17)                 CALL    SET_ATTR_ROW
+617F-C1              233 ( 10)                 POP             BC
+6180-F1              234 ( 10)                 POP             AF
+6181-D1              235 ( 10)                 POP             DE
+6182-C9              236 ( 10)                 RET
+6183-                237
+6183-                238       ;
+6183-                239       ; Get the memory address of the bank title, as indicated by the value in A.
+6183-                240       ; This works based on the fact that we chose to use 32 bytes for each of the
+6183-                241       ; title strings (this includes $00 termination, so 31 characters max for
+6183-                242       ; each of them).
+6183-                243       ;
+6183-                244       GET_TITLE_ADDR:
+6183-F5              245 ( 11)                 PUSH    AF
+6184-0F              246 (  4)                 RRCA                                    ; Multiply by 32
+6185-0F              247 (  4)                 RRCA
+6186-0F              248 (  4)                 RRCA
+6187-6F              249 (  4)                 LD              L,A                             ; Store as low byte
+6188-E6 03           250 (  7)                 AND             3                               ; Mask bits for high byte
+618A-C6 7C           251 (  7)                 ADD             A,$7C                   ;  and with first string address ($7C00)
+618C-67              252 (  4)                 LD              H,A                             ; High byte done.
+618D-7D              253 (  4)                 LD              A,L                             ; Get back x*32
+618E-E6 E0           254 (  7)                 AND             $E0
+6190-6F              255 (  4)                 LD              L,A                             ; Put in L.
+6191-F1              256 ( 10)                 POP             AF
+6192-C9              257 ( 10)                 RET
+6193-                258       ;
+6193-                259       ; Initial routine for handle keyboard input.
+6193-                260       ;
+6193-                261       READ_INPUT:
+6193-E5              262 ( 11)                 PUSH    HL
+6194-C5              263 ( 11)                 PUSH    BC
+6195-01 FE EF        264 ( 10)                 LD              BC,KR_09876             ; Keys 6 through 0
+6198-CD B4 61        265 ( 17)                 CALL    READ_ROW                ; Read row,
+619B-FE 1F           266 (  7)                 CP              $1F                             ;  are no keys pressed?
+619D-28 05           267 ( 7+)                 JR              Z,.CHK_Q                ; Yes, we go check Q instead.
+619F-CD B9 61        268 ( 17)                 CALL    HANDLE_KEY              ; No, we'll need to process the key.
+61A2-18 0D           269 ( 12)                 JR              .DONE                   ; We don't want to do anything more.
+61A4-01 FE FB        270 ( 10) .CHK_Q: LD              BC,KR_QWERT             ; Check for Q key
+61A7-CD B4 61        271 ( 17)                 CALL    READ_ROW                ; Read corresponding keyboard row.
+61AA-E6 01           272 (  7)                 AND             %00000001               ; Is Q pressed?
+61AC-20 03           273 ( 7+)                 JR              NZ,.DONE                ; No, then we are done.
+61AE-C3 73 62        274 ( 10)                 JP              START_BASIC             ; Yes, then we go start basic.
+61B1-C1              275 ( 10) .DONE:  POP             BC
+61B2-E1              276 ( 10)                 POP             HL
+61B3-C9              277 ( 10)                 RET
+61B4-                278
+61B4-                279       ;
+61B4-                280       ; Read keyboard row as indicated by the BC registers, value
+61B4-                281       ; will be put in A. Note that due to Z80 quirkiness, the
+61B4-                282       ; entire BC value (address) will be put on the address bus.
+61B4-                283       ;
+61B4-                284       READ_ROW:
+61B4-ED 78           285 ( 12)                 IN              A,(C)
+61B6-E6 1F           286 (  7)                 AND             %00011111               ; Mask out floating bits
+61B8-C9              287 ( 10)                 RET
+61B9-                288
+61B9-                289       ;
+61B9-                290       ; Handles a detected key press, but we delay exectution until
+61B9-                291       ; we've detected the release of the key (mostly to avoid having to
+61B9-                292       ; deal with key repeat delays).
+61B9-                293       ;
+61B9-                294       HANDLE_KEY:
+61B9-D5              295 ( 11)                 PUSH    DE
+61BA-32 C4 5C        296 ( 13)                 LD              (LAST_K),A              ; Store key for later
+61BD-                297                       ; LD            DE, $4000
+61BD-CD B4 61        298 ( 17) .AGAIN: CALL    READ_ROW                ; Read row again, and then
+61C0-FE 1F           299 (  7)                 CP              $1F                             ;  check if all keys released.
+61C2-28 02           300 ( 7+)                 JR              Z,.RELEASED             ; Yes, so go do something.
+61C4-                301                       ; DEC           DE                              ; No, so we need to keep waiting.
+61C4-                302                       ; LD            A,D                             ; Decrementing DE does not set Z-flag, so we'll
+61C4-                303                       ; OR            E                               ;  need to do some quirkiness to get it in there.
+61C4-                304                       ; JR            Z,.RELEASED             ; Key repeat once we reach 0.
+61C4-18 F7           305 ( 12)                 JR              .AGAIN
+61C6-                306       .RELEASED:
+61C6-D1              307 ( 10)                 POP             DE
+61C7-3A C4 5C        308 ( 13)                 LD              A,(LAST_K)              ; Read it back again.
+61CA-FE 1D           309 (  7) .CHK_9: CP              $1D                             ; Bit 1 is zero for UP
+61CC-20 05           310 ( 7+)                 JR              NZ,.CHK_8               ; Next key, unless we have a match.
+61CE-CD E4 61        311 ( 17)                 CALL    MOVE_UP
+61D1-18 10           312 ( 12)                 JR              .DONE
+61D3-FE 1B           313 (  7) .CHK_8: CP              $1B                             ; Bit 2 is zero for DOWN
+61D5-20 05           314 ( 7+)                 JR              NZ,.CHK_0               ; Next key, unless we have a match.
+61D7-CD F5 61        315 ( 17)                 CALL    MOVE_DOWN
+61DA-18 07           316 ( 12)                 JR              .DONE
+61DC-FE 1E           317 (  7) .CHK_0: CP              $1E                             ; Bit 0 is zero for FIRE
+61DE-20 03           318 ( 7+)                 JR              NZ,.DONE                ; Done checking, unless we have a match.
+61E0-CD 0B 62        319 ( 17)                 CALL    PRESS_FIRE
+61E3-C9              320 ( 10) .DONE:  RET
+61E4-                321
+61E4-                322       ;
+61E4-                323       ; Move selection up, decrementing the index as we go. The code ensures that
+61E4-                324       ; we don't go past the minimum value of of 1 (bank 0 is this program).
+61E4-                325       ;
+61E4-                326       MOVE_UP:
+61E4-F5              327 ( 11)                 PUSH    AF
+61E5-3A C3 5C        328 ( 13)                 LD              A,(CUR_IDX)             ; Load current index number.
+61E8-                329
+61E8-FE 01           330 (  7)                 CP              1                               ; Already at minimum index?
+61EA-28 04           331 ( 7+)                 JR              Z,.DONE                 ; Yes, then we are done.
+61EC-3D              332 (  4)                 DEC             A                               ; No, so let's bump it up one position.
+61ED-32 C3 5C        333 ( 13)                 LD              (CUR_IDX),A
+61F0-CD 42 61        334 ( 17) .DONE:  CALL    UPDATE_TITLES   ; Update the titles with highlight.
+61F3-F1              335 ( 10)                 POP             AF
+61F4-C9              336 ( 10)                 RET
+61F5-                337
+61F5-                338       ;
+61F5-                339       ; Move selection down, incrementing the index as far as we can go. This value
+61F5-                340       ; comes from the SLOTS variable, initially calculated from the values entered
+61F5-                341       ; in NUM_TITLES at the end of the image. We need to do this so that we can't
+61F5-                342       ; go past the size of the actual EEPROM.
+61F5-                343       ;
+61F5-                344       MOVE_DOWN:
+61F5-F5              345 ( 11)                 PUSH    AF
+61F6-C5              346 ( 11)                 PUSH    BC
+61F7-3A C5 5C        347 ( 13)                 LD              A,(SLOTS)               ; Get the maximum number we can have,
+61FA-47              348 (  4)                 LD              B,A                             ;  save it in C for later comparison.
+61FB-3A C3 5C        349 ( 13)                 LD              A,(CUR_IDX)             ; Load current index number.
+61FE-                350
+61FE-B8              351 (  4)                 CP              B                               ; Already at maximum index?
+61FF-28 04           352 ( 7+)                 JR              Z,.DONE                 ; Yes, then we are done.
+6201-3C              353 (  4)                 INC             A                               ; No, so let's bump it up one position.
+6202-32 C3 5C        354 ( 13)                 LD              (CUR_IDX),A
+6205-CD 42 61        355 ( 17) .DONE:  CALL    UPDATE_TITLES   ; Update the titles with highlight.
+6208-C1              356 ( 10)                 POP             BC
+6209-F1              357 ( 10)                 POP             AF
+620A-C9              358 ( 10)                 RET
+620B-                359
+620B-                360       ;
+620B-                361       ; The fire button has been pushed, so we'll attempt to perform bank switching.
+620B-                362       ;
+620B-                363       PRESS_FIRE:
+620B-F5              364 ( 11)                 PUSH    AF
+620C-C5              365 ( 11)                 PUSH    BC
+620D-E5              366 ( 11)                 PUSH    HL
+620E-D5              367 ( 11)                 PUSH    DE
+620F-                368
+620F-CD 29 62        369 ( 17)                 CALL    GET_BANK_IDENTIFIER
+6212-7C              370 (  4)                 LD              A,H                             ; Bank identifier in A
+6213-45              371 (  4)                 LD              B,L                             ; Chip identifier in B
+6214-CB 10           372 (  8)                 RL              B                               ; Shift CS value into correct position, these
+6216-CB 10           373 (  8)                 RL              B                               ;  should be bit 6 and 7 on the bank switching
+6218-CB 10           374 (  8)                 RL              B                               ;  register.
+621A-CB 10           375 (  8)                 RL              B
+621C-CB 10           376 (  8)                 RL              B
+621E-CB 10           377 (  8)                 RL              B
+6220-80              378 (  4)                 ADD             B                               ; Add slot number to it
+6221-                379
+6221-                380                       ; LD            HL,$0016                ; Display resulting CS
+6221-                381                       ; CALL  SET_CURSOR
+6221-                382                       ; CALL  SET_ATTR_ROW
+6221-                383
+6221-CD 56 62        384 ( 17)                 CALL    SET_BANK
+6224-                385
+6224-D1              386 ( 10)                 POP             DE
+6225-E1              387 ( 10)                 POP             HL
+6226-C1              388 ( 10)                 POP             BC
+6227-F1              389 ( 10)                 POP             AF
+6228-                390                       ; CALL  SET_BANK                ; Configure bank switching.
+6228-C9              391 ( 10)                 RET                                             ; We should never be able to get here.
+6229-                392
+6229-                393       ;
+6229-                394       ; Converts the current slot index into a value suitable for use with the
+6229-                395       ; bank switching scheme, this is mostly complicated due to the four counters
+6229-                396       ; used. On return H will hold bank value, L will indicate the chip identifier.
+6229-                397       ;
+6229-                398       GET_BANK_IDENTIFIER:
+6229-F5              399 ( 11)                 PUSH    AF
+622A-C5              400 ( 11)                 PUSH    BC
+622B-D5              401 ( 11)                 PUSH    DE
+622C-                402
+622C-21 FC 7F        403 ( 10)                 LD              HL,SLOT_COUNT
+622F-0E 04           404 (  7)                 LD              C,4
+6231-3A C3 5C        405 ( 13)                 LD              A,(CUR_IDX)
+6234-57              406 (  4)                 LD              D,A
+6235-3E 00           407 (  7)                 LD              A,0
+6237-1E 00           408 (  7)                 LD              E,0
+6239-                409       .NEXT_CHIP:
+6239-46              410 (  7)                 LD              B,(HL)
+623A-1E 00           411 (  7)                 LD              E,0
+623C-1C              412 (  4) .NEXT:  INC             E
+623D-3C              413 (  4)                 INC     A
+623E-BA              414 (  4)                 CP              D
+623F-28 07           415 ( 7+)                 JR              Z,.DONE
+6241-                416
+6241-05              417 (  4)                 DEC             B
+6242-20 F8           418 ( 7+)                 JR              NZ,.NEXT
+6244-                419
+6244-23              420 (  6)                 INC             HL
+6245-0D              421 (  4)                 DEC             C
+6246-20 F1           422 ( 7+)                 JR              NZ,.NEXT_CHIP
+6248-                423
+6248-                424       .DONE:
+6248-3E 04           425 (  7)                 LD              A,4
+624A-91              426 (  4)                 SUB             C
+624B-47              427 (  4)                 LD              B,A
+624C-20 01           428 ( 7+)                 JR              NZ,.OFFSET_LOADER
+624E-1C              429 (  4)                 INC             E
+624F-                430       .OFFSET_LOADER:
+624F-1D              431 (  4)                 DEC             E
+6250-63              432 (  4)                 LD              H,E
+6251-6F              433 (  4)                 LD              L,A
+6252-                434
+6252-D1              435 ( 10)                 POP             DE
+6253-C1              436 ( 10)                 POP             BC
+6254-F1              437 ( 10)                 POP             AF
+6255-C9              438 ( 10)                 RET
+6256-                439
+6256-                440       ;
+6256-                441       ; Configures bank switching according to value in A. Before restarting at
+6256-                442       ; $0000 to start the bank that has been switched in, we'll try to ensure
+6256-                443       ; that the bank was actually switched - this is done by looking for a text
+6256-                444       ; signature at $0400. After switching the first two bytes probably shouldn't
+6256-                445       ; match 'Z' and 'X'.
+6256-                446       ;
+6256-                447       SET_BANK:
+6256-0E 3F           448 (  7)                 LD              C,CONTROL_LED   ; Controls LEDs found on ZX Diagnostic 2.021
+6258-ED 79           449 ( 12)                 OUT             (C),A                   ;  so let's just write the value to it.
+625A-0E 1F           450 (  7)                 LD              C,CONTROL_BANK  ; Port used for controlling the bank switching
+625C-ED 79           451 ( 12)                 OUT             (C),A                   ;  we write the same value.
+625E-21 00 04        452 ( 10) .CHECK: LD              HL,SIGNATURE    ; Banks should now have been switched around,
+6261-7E              453 (  7)                 LD              A,(HL)                  ;  but in order to make sure we'll check.
+6262-FE 5A           454 (  7)                 CP              'Z'
+6264-20 09           455 ( 7+)                 JR              NZ,.OK
+6266-23              456 (  6)                 INC             HL
+6267-7E              457 (  7)                 LD              A,(HL)
+6268-FE 58           458 (  7)                 CP              'X'
+626A-20 03           459 ( 7+)                 JR              NZ,.OK
+626C-C3 53 60        460 ( 10) .ERROR: JP              ERROR                   ; Jump out of main loop and set error screen.
+626F-C3 00 00        461 ( 10) .OK:    JP              $0000                   ; Looks good, so we'll just start from the bank.
+6272-C9              462 ( 10)                 RET                                             ; We should never be able to get here.
+6273-                463
+6273-                464       ;
+6273-                465       ; Start ZX Basic. This is done by attempting to deactivate the bank switching
+6273-                466       ; hardware, then before restarting at $0000 a check will be made to see that
+6273-                467       ; the loader ROM has disappeared.
+6273-                468       ;
+6273-                469       START_BASIC:
+6273-3E 20           470 (  7)                 LD              A,%00100000             ; Bit 5 disables bank switching.
+6275-CD 56 62        471 ( 17)                 CALL    SET_BANK                ; Try to do it.
+6278-C9              472 ( 10)                 RET                                             ; We should never be able to get here.
+6279-                473
+6279-                474       ;
+6279-                475       ; Reset cursor position.
+6279-                476       ;
+6279-                477       RESET_CURSOR:
+6279-3E 00           478 (  7)                 LD              A,0
+627B-32 C0 5C        479 ( 13)                 LD              (CUR_X),A
+627E-32 C1 5C        480 ( 13)                 LD              (CUR_Y),A
+6281-C9              481 ( 10)                 RET
+6282-                482
+6282-                483       ;
+6282-                484       ; Set cursor position, HL register is treated as X,Y character coordinates.
+6282-                485       ; Example:
+6282-                486       ;               LD A,$0102 will set X=1 and Y=2
+6282-                487       ;
+6282-                488       SET_CURSOR:
+6282-F5              489 ( 11)                 PUSH    AF
+6283-7C              490 (  4)                 LD              A,H
+6284-32 C0 5C        491 ( 13)                 LD              (CUR_X),A
+6287-7D              492 (  4)                 LD              A,L
+6288-32 C1 5C        493 ( 13)                 LD              (CUR_Y),A
+628B-F1              494 ( 10)                 POP             AF
+628C-C9              495 ( 10)                 RET
+628D-                496
+628D-                497       ;
+628D-                498       ; Loads cursor into HL register, this moves data in exactly the opposite
+628D-                499       ; way as SET_CURSOR.
+628D-                500       ;
+628D-                501       GET_CURSOR:
+628D-F5              502 ( 11)                 PUSH    AF
+628E-3A C0 5C        503 ( 13)                 LD              A,(CUR_X)
+6291-67              504 (  4)                 LD              H,A
+6292-3A C1 5C        505 ( 13)                 LD              A,(CUR_Y)
+6295-6F              506 (  4)                 LD              L,A
+6296-F1              507 ( 10)                 POP             AF
+6297-C9              508 ( 10)                 RET
+6298-                509
+6298-                510       ;
+6298-                511       ; Increment cursor position. While the screen attribute memory is organized
+6298-                512       ; as expected, the RAM used for the pixel data is not - so we need to track
+6298-                513       ; when we cross over from one line into the next.
+6298-                514       ;
+6298-                515       INC_CURSOR:
+6298-F5              516 ( 11)                 PUSH    AF                              ; Save AF for when I forget it
+6299-3A C0 5C        517 ( 13)                 LD              A,(CUR_X)
+629C-FE 1F           518 (  7)                 CP              32-1                    ; Check if in last column
+629E-38 07           519 ( 7+)                 JR              C,.INC_X                ; no, just increment X
+62A0-3E 00           520 (  7)                 LD              A,0                             ; yes, so we:
+62A2-32 C0 5C        521 ( 13)                 LD              (CUR_X),A               ;   reset X
+62A5-18 09           522 ( 12)                 JR              .INC_Y                  ;   increment Y
+62A7-3A C0 5C        523 ( 13) .INC_X: LD              A,(CUR_X)
+62AA-3C              524 (  4)                 INC             A
+62AB-32 C0 5C        525 ( 13)                 LD              (CUR_X),A
+62AE-18 15           526 ( 12)                 JR              .DONE
+62B0-3A C1 5C        527 ( 13) .INC_Y: LD              A,(CUR_Y)
+62B3-FE 17           528 (  7)                 CP              24-1                    ; Check if on last row
+62B5-38 07           529 ( 7+)                 JR              C,.NXT_Y                ; no, just go to the next
+62B7-3E 00           530 (  7)                 LD              A,0                             ;   yes, so we:
+62B9-32 C1 5C        531 ( 13)                 LD              (CUR_Y),A               ;   reset Y
+62BC-18 07           532 ( 12)                 JR              .DONE                   ;   and we are done.
+62BE-3A C1 5C        533 ( 13) .NXT_Y: LD              A,(CUR_Y)
+62C1-3C              534 (  4)                 INC             A
+62C2-32 C1 5C        535 ( 13)                 LD              (CUR_Y),A
+62C5-F1              536 ( 10) .DONE:  POP             AF                              ; Restore AF
+62C6-C9              537 ( 10)                 RET
+62C7-                538
+62C7-                539       ;
+62C7-                540       ; Get the memory address for the attribute as indicated by the cursor.
+62C7-                541       ; At the end, HL should hold an address from $5800 and upwards.
+62C7-                542       ;
+62C7-                543       GET_ATTR_ADDR:
+62C7-F5              544 ( 11)                 PUSH    AF
+62C8-3A C1 5C        545 ( 13)                 LD              A,(CUR_Y)               ; X position
+62CB-0F              546 (  4)                 RRCA                                    ; Multiply by 32
+62CC-0F              547 (  4)                 RRCA
+62CD-0F              548 (  4)                 RRCA
+62CE-6F              549 (  4)                 LD              L,A                             ; Store as low byte
+62CF-E6 03           550 (  7)                 AND             3                               ; Mask bits for high byte
+62D1-C6 58           551 (  7)                 ADD             A,$58                   ; And with start of attribute address
+62D3-67              552 (  4)                 LD              H,A                             ; High byte done.
+62D4-7D              553 (  4)                 LD              A,L                             ; Get back x*32
+62D5-E6 E0           554 (  7)                 AND             $E0
+62D7-6F              555 (  4)                 LD              L,A                             ; Put in L.
+62D8-3A C0 5C        556 ( 13)                 LD              A,(CUR_X)               ; Get row start
+62DB-85              557 (  4)                 ADD             A,L                             ; Add to low byte
+62DC-6F              558 (  4)                 LD              L,A
+62DD-F1              559 ( 10)                 POP             AF
+62DE-C9              560 ( 10)                 RET
+62DF-                561
+62DF-                562       ;
+62DF-                563       ; Set attributes for the block currently indicated by the
+62DF-                564       ; cursor.
+62DF-                565       ;
+62DF-                566       SET_ATTR:
+62DF-E5              567 ( 11)                 PUSH    HL
+62E0-CD C7 62        568 ( 17)                 CALL    GET_ATTR_ADDR
+62E3-77              569 (  7)                 LD              (HL),A
+62E4-E1              570 ( 10)                 POP             HL
+62E5-C9              571 ( 10)                 RET
+62E6-                572
+62E6-                573       ;
+62E6-                574       ; Set the attributes for a row of screen memory, automatically setting the
+62E6-                575       ; cursor location to the beginning of the row. Does not increment after
+62E6-                576       ; every character as we're not actually printing data.
+62E6-                577       ;
+62E6-                578       SET_ATTR_ROW:
+62E6-E5              579 ( 11)                 PUSH    HL
+62E7-C5              580 ( 11)                 PUSH    BC
+62E8-CD C7 62        581 ( 17)                 CALL    GET_ATTR_ADDR
+62EB-                582
+62EB-06 20           583 (  7)                 LD              B,32
+62ED-77              584 (  7) .NEXT:  LD              (HL),A
+62EE-23              585 (  6)                 INC             HL
+62EF-05              586 (  4)                 DEC             B
+62F0-20 FB           587 ( 7+)                 JR              NZ,.NEXT
+62F2-C1              588 ( 10)                 POP             BC
+62F3-E1              589 ( 10)                 POP             HL
+62F4-C9              590 ( 10)                 RET
+62F5-                591
+62F5-                592       ;
+62F5-                593       ; Output character to the screen. Given that the assembled sources will be
+62F5-                594       ; expected to be ASCII, we'll need to subtract 32 from the value.
+62F5-                595       ;
+62F5-                596       SET_CHAR:
+62F5-F5              597 ( 11)                 PUSH    AF
+62F6-D6 20           598 (  7)                 SUB             32                              ; Subtract 32 from ASCII to get font offset
+62F8-CD FD 62        599 ( 17)                 CALL    SET_SYMBOL
+62FB-F1              600 ( 10)                 POP             AF
+62FC-C9              601 ( 10)                 RET
+62FD-                602
+62FD-                603       ;
+62FD-                604       ; Outputs character with A specifying index into font data, note that DE is
+62FD-                605       ; expected to hold the memory reference for the font used.
+62FD-                606       ;
+62FD-                607       SET_SYMBOL:
+62FD-C5              608 ( 11)                 PUSH    BC
+62FE-D5              609 ( 11)                 PUSH    DE
+62FF-E5              610 ( 11)                 PUSH    HL
+6300-CD 24 63        611 ( 17)                 CALL    GET_SCREEN_ADDR ; Get screen address for cursor location
+6303-06 00           612 (  7)                 LD              B,0                             ; Find FONT_DATA character index
+6305-4F              613 (  4)                 LD              C,A
+6306-                614
+6306-CB 21           615 (  8)                 SLA             C
+6308-CB 10           616 (  8)                 RL              B
+630A-CB 21           617 (  8)                 SLA             C
+630C-CB 10           618 (  8)                 RL              B
+630E-CB 21           619 (  8)                 SLA             C
+6310-CB 10           620 (  8)                 RL              B
+6312-                621
+6312-EB              622 (  4)                 EX              DE, HL
+6313-09              623 ( 11)                 ADD     HL, BC
+6314-EB              624 (  4)                 EX              DE, HL
+6315-CD 64 63        625 ( 17)                 CALL    SET_CHAR_PIXELS ; Output pixels to screen memory
+6318-E1              626 ( 10)                 POP     HL
+6319-D1              627 ( 10)                 POP             DE
+631A-C1              628 ( 10)                 POP             BC
+631B-C9              629 ( 10)                 RET
+631C-                630
+631C-                631       SET_FONT1:
+631C-11 00 75        632 ( 10)                 LD              DE,FONT1                ; Start of font data
+631F-C9              633 ( 10)                 RET
+6320-                634
+6320-                635       SET_FONT2:
+6320-11 30 78        636 ( 10)                 LD              DE,FONT2
+6323-C9              637 ( 10)                 RET
+6324-                638
+6324-                639       ;
+6324-                640       ; Get the memory address for the character as indicated by the cursor,
+6324-                641       ; the location in screen memory will be left in HL (from $4000 to $57FF).
+6324-                642       ;
+6324-                643       GET_SCREEN_ADDR:
+6324-F5              644 ( 11)                 PUSH    AF
+6325-3A C0 5C        645 ( 13)                 LD              A,(CUR_X)
+6328-6F              646 (  4)                 LD              L,A
+6329-                647
+6329-3A C1 5C        648 ( 13)                 LD              A,(CUR_Y)
+632C-E6 07           649 (  7)                 AND     %00000111
+632E-1F              650 (  4)                 RRA
+632F-1F              651 (  4)                 RRA
+6330-1F              652 (  4)                 RRA
+6331-1F              653 (  4)                 RRA
+6332-B5              654 (  4)                 OR              L
+6333-6F              655 (  4)                 LD              L,A
+6334-3A C1 5C        656 ( 13)                 LD              A,(CUR_Y)
+6337-E6 18           657 (  7)                 AND     %00011000
+6339-F6 40           658 (  7)                 OR              /SCREEN                 ; Screen address HI byte
+633B-67              659 (  4)                 LD              H,A
+633C-                660
+633C-F1              661 ( 10)                 POP             AF
+633D-C9              662 ( 10)                 RET
+633E-                663
+633E-                664       ;
+633E-                665       ; Print string to the current cursor position, incrementing for each character
+633E-                666       ; that is "printed" to the screen memory.
+633E-                667       ;
+633E-E5              668 ( 11) PUTS:   PUSH    HL
+633F-F5              669 ( 11)                 PUSH    AF
+6340-7E              670 (  7) .NEXT:  LD              A,(HL)
+6341-B7              671 (  4)                 OR              A                               ; OR with itself to update the Z-flag.
+6342-28 0A           672 ( 7+)                 JR              Z,.DONE                 ; Done if we found byte that is $00
+6344-CD F5 62        673 ( 17)                 CALL    SET_CHAR                ; Output character to cursor location
+6347-CD 98 62        674 ( 17)                 CALL    INC_CURSOR              ; Increment cursor to next position
+634A-23              675 (  6)                 INC             HL                              ; Next character
+634B-C3 40 63        676 ( 10)                 JP              .NEXT
+634E-F1              677 ( 10) .DONE:  POP             AF
+634F-E1              678 ( 10)                 POP             HL
+6350-C9              679 ( 10)                 RET
+6351-                680
+6351-                681       ;
+6351-                682       ; Same as above except that we output symbols directly instead of translating
+6351-                683       ; ASCII characters (that way we don't have to hardcode symbols at +32).
+6351-                684       ;
+6351-E5              685 ( 11) PUTSS:  PUSH    HL
+6352-F5              686 ( 11)                 PUSH    AF
+6353-7E              687 (  7) .NEXT:  LD              A,(HL)
+6354-B7              688 (  4)                 OR              A                               ; OR with itself to update the Z-flag.
+6355-28 0A           689 ( 7+)                 JR              Z,.DONE                 ; Done if we found byte that is $00
+6357-CD FD 62        690 ( 17)                 CALL    SET_SYMBOL              ; Output character to cursor location
+635A-CD 98 62        691 ( 17)                 CALL    INC_CURSOR              ; Increment cursor to next position
+635D-23              692 (  6)                 INC             HL                              ; Next character
+635E-C3 53 63        693 ( 10)                 JP              .NEXT
+6361-F1              694 ( 10) .DONE:  POP             AF
+6362-E1              695 ( 10)                 POP             HL
+6363-C9              696 ( 10)                 RET
+6364-                697
+6364-                698       ;
+6364-                699       ; Output character data into screen memory, these are 8x8 pixels - meaning
+6364-                700       ; we'll need to update eight different lines on the screen.
+6364-                701       ;
+6364-                702       SET_CHAR_PIXELS:
+6364-06 08           703 (  7)                 LD              B,8                             ; 8 lines per character
+6366-1A              704 (  7) .NEXT:  LD              A,(DE)                  ; Load character byte data
+6367-77              705 (  7)                 LD              (HL),A                  ; Store byte data in screen memory
+6368-13              706 (  6)                 INC             DE                              ; Next character byte
+6369-24              707 (  4)                 INC             H                               ; Screen line start every $100, so we do that
+636A-10 FA           708 ( 8+)                 DJNZ    .NEXT                   ; Loop unless B reached 0.
+636C-C9              709 ( 10)                 RET
+636D-                710
+636D-                711       ;
+636D-                712       ; Clear the entire screen, value in A is used to initialize the corresponding
+636D-                713       ; attribute bytes (when CLR_BG is called directly). The byte must have the
+636D-                714       ; following composition:
+636D-                715       ;       bit 0 (ink bit 0)
+636D-                716       ;           1 (        1)
+636D-                717       ;           2 (        2)
+636D-                718       ;       bit 3 (paper bit 0)
+636D-                719       ;           4 (          1)
+636D-                720       ;       5 (          2)
+636D-                721       ;   bit 6 (bright mode)
+636D-                722       ;   bit 7 (flash mode)
+636D-                723       ;
+636D-3E 00           724 (  7) CLEAR:  LD              A,0
+636F-F5              725 ( 11) CLR_BG: PUSH    AF
+6370-32 C2 5C        726 ( 13)                 LD              (LAST_A),A              ; Save attribute value for later
+6373-21 00 40        727 ( 10)                 LD              HL,SCREEN               ; Screen memory start
+6376-11 01 40        728 ( 10)                 LD              DE,SCREEN+1
+6379-01 00 18        729 ( 10)                 LD              BC,SZ_SCRN
+637C-36 00           730 ( 10)                 LD              (HL),0
+637E-ED B0           731 (16+)                 LDIR                                    ; Loop until we've written SZ_SCRN bytes
+6380-01 FF 02        732 ( 10)                 LD              BC,SZ_ATTR-1
+6383-77              733 (  7)                 LD              (HL),A
+6384-ED B0           734 (16+)                 LDIR                                    ; Loop until we've written all attributes
+6386-F1              735 ( 10)                 POP             AF
+6387-C9              736 ( 10)                 RET
+6388-                737
+6388-                738       MSG_TB_UPPER:
+6388-02 03 03 03 
+     03 03 03 03 
+     03 03 03 03 
+     03 03 03        739                       .DB             $02,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03
+6397-03 03 03 03 
+     03 03 03 03 
+     03 03 03 03 
+     03 03 03        740                       .DB             $03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03,$03
+63A6-03 04 00        741                       .DB             $03,$04,$00
+63A9-                742       MSG_TB_LOWER:
+63A9-06 05 05 05 
+     05 05 05 05 
+     05 05 05 05 
+     05 05 05        743                       .DB             $06,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
+63B8-05 05 05 05 
+     05 05 05 05 
+     05 05 05 05 
+     05 05 05        744                       .DB             $05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
+63C7-05 07 00        745                       .DB             $05,$07,$00
+63CA-                746       MSG_TITLE:
+63CA-20 20 20 20 
+     20 20 20 5A 
+     58 20 49 4E 
+     54 45 52 46 
+     41 43 45 20 
+     32 2E 30 32 
+     31 20 20 20 
+     20 20 20 20 
+     00              747                       .AZ             "       ZX INTERFACE 2.021       "
+63EB-                748       MSG_HELP:
+63EB-20 20 20 28 
+     3F 20 3D 20 
+     38 20 20 3F 
+     20 3D 20 39 
+     20 20 53 54 
+     41 52 54 20 
+     3D 20 30 29 
+     20 20 20 20     749                       .AS             "   (? = 8  ? = 9  START = 0)    "
+640B-20 20 20 20 
+     20 20 20 20 
+     28 51 20 3D 
+     20 5A 58 20 
+     42 61 73 69 
+     63 29 00        750                       .AZ             "        (Q = ZX Basic)"
+6422-                751       ERR_TITLE:
+6422-20 20 20 20 
+     20 20 20 20 
+     20 20 20 20 
+     20 45 52 52 
+     4F 52 20 20 
+     20 20 20 20 
+     20 20 20 20 
+     20 20 20 00     752                       .AZ             "             ERROR             "
+6442-                753       ERR_MSG:
+6442-20 22 43 61 
+     72 74 72 69 
+     64 67 65 20 
+     62 61 6E 6B 
+     20 6E 6F 74 
+     20 73 77 69 
+     74 63 68 65 
+     64 20 6F 75 
+     74 20 61 73 
+     20 65 78 70 
+     65 63 74 65 
+     64 2E 20 53 
+     6F 66 74 77 
+     61 72 65 20 
+     66 6F 72        754                       .AS             " \"Cartridge bank not switched out as expected. Software for"
+647D-20 75 73 65 
+     20 77 69 74 
+     68 20 5A 58 
+     20 49 6E 74 
+     65 72 66 61 
+     63 65 20 32 
+     2E 30 32 31 
+     20 6F 72 20 
+     63 6F 6D 70 
+     61 74 69 62 
+     6C 65 20 68 
+     61 72 64 77 
+     61 72 65 2E 
+     22 00           755                       .AZ             " use with ZX Interface 2.021 or compatible hardware.\""
+64B3-                756       ; NAME  .AZ             " ZX Basic"
+64B3-                757       ; NAME  .AZ             "        Cartridge Loader       "
+64B3-                758
+7400                759                       .NO             $7400
+7400-                760       FONT_SYMBOLS:
+7400-                761                       .IN             font_symbols.asm
+7400-            I     1               ; 00 (DOWN arrow)
+7400-00          I     2               .db     %00000000
+7401-FF          I     3               .db     %11111111
+7402-81          I     4               .db     %10000001
+7403-42          I     5               .db     %01000010
+7404-24          I     6               .db     %00100100
+7405-18          I     7               .db     %00011000
+7406-00          I     8               .db     %00000000
+7407-00          I     9               .db     %00000000
+7408-            I    10
+7408-            I    11               ; 01 (UP arrow)
+7408-00          I    12               .db     %00000000
+7409-18          I    13               .db     %00011000
+740A-24          I    14               .db     %00100100
+740B-42          I    15               .db     %01000010
+740C-81          I    16               .db     %10000001
+740D-FF          I    17               .db     %11111111
+740E-00          I    18               .db     %00000000
+740F-00          I    19               .db     %00000000
+7410-            I    20
+7410-            I    21               ; 02 (Upper left corner)
+7410-00          I    22               .db     %00000000
+7411-7F          I    23               .db     %01111111
+7412-40          I    24               .db     %01000000
+7413-5F          I    25               .db     %01011111
+7414-50          I    26               .db     %01010000
+7415-50          I    27               .db     %01010000
+7416-50          I    28               .db     %01010000
+7417-50          I    29               .db     %01010000
+7418-            I    30
+7418-            I    31               ; 03 (Upper line)
+7418-00          I    32               .db     %00000000
+7419-FF          I    33               .db     %11111111
+741A-00          I    34               .db     %00000000
+741B-FF          I    35               .db     %11111111
+741C-00          I    36               .db     %00000000
+741D-00          I    37               .db     %00000000
+741E-00          I    38               .db     %00000000
+741F-00          I    39               .db     %00000000
+7420-            I    40
+7420-            I    41               ; 04 (Upper right corner)
+7420-00          I    42               .db     %00000000
+7421-FE          I    43               .db     %11111110
+7422-02          I    44               .db     %00000010
+7423-FA          I    45               .db     %11111010
+7424-0A          I    46               .db     %00001010
+7425-0A          I    47               .db     %00001010
+7426-0A          I    48               .db     %00001010
+7427-0A          I    49               .db     %00001010
+7428-            I    50
+7428-            I    51               ; 05 (Lower line)
+7428-00          I    52               .db     %00000000
+7429-00          I    53               .db     %00000000
+742A-00          I    54               .db     %00000000
+742B-00          I    55               .db     %00000000
+742C-FF          I    56               .db     %11111111
+742D-00          I    57               .db     %00000000
+742E-FF          I    58               .db     %11111111
+742F-00          I    59               .db     %00000000
+7430-            I    60
+7430-            I    61               ; 06 (Lower left corner)
+7430-50          I    62               .db     %01010000
+7431-50          I    63               .db     %01010000
+7432-50          I    64               .db     %01010000
+7433-50          I    65               .db     %01010000
+7434-5F          I    66               .db     %01011111
+7435-40          I    67               .db     %01000000
+7436-7F          I    68               .db     %01111111
+7437-00          I    69               .db     %00000000
+7438-            I    70
+7438-            I    71               ; 07 (Lower right corner)
+7438-0A          I    72               .db     %00001010
+7439-0A          I    73               .db     %00001010
+743A-0A          I    74               .db     %00001010
+743B-0A          I    75               .db     %00001010
+743C-FA          I    76               .db     %11111010
+743D-02          I    77               .db     %00000010
+743E-FE          I    78               .db     %11111110
+743F-00          I    79               .db     %00000000
+7440-            I    80
+7440-            I    81               ; 08 (Left line)
+7440-50          I    82               .db     %01010000
+7441-50          I    83               .db     %01010000
+7442-50          I    84               .db     %01010000
+7443-50          I    85               .db     %01010000
+7444-50          I    86               .db     %01010000
+7445-50          I    87               .db     %01010000
+7446-50          I    88               .db     %01010000
+7447-50          I    89               .db     %01010000
+7448-            I    90
+7448-            I    91               ; 09 (Right line)
+7448-0A          I    92               .db     %00001010
+7449-0A          I    93               .db     %00001010
+744A-0A          I    94               .db     %00001010
+744B-0A          I    95               .db     %00001010
+744C-0A          I    96               .db     %00001010
+744D-0A          I    97               .db     %00001010
+744E-0A          I    98               .db     %00001010
+744F-0A          I    99               .db     %00001010
+7500                762                       .NO             $7500,$FF
+7500-                763       FONT1:  .BI             font_computer.bin
+7830                764                       .NO             $7830,$FF
+7830-                765       FONT2:  .BI             font_msx.bin
+7B30-                766
+7C00                767                       .NO             $7C00,$FF
+7C00-20 20 20 20 
+     20 20 20 20 
+     43 61 72 74 
+     72 69 64 67 
+     65 20 4C 6F 
+     61 64 65 72 
+     20 20 20 20 
+     20 20 20 00     768       TITLE0  .AZ             "        Cartridge Loader       "
+7C20-                769                       .NO             $7C20,$00
+7C20-20 4E 61 6D 
+     65 20 31 00     770       TITLE1: .AZ             " Name 1"
+7C40                771                       .NO             $7C40,$00
+7C40-20 4E 61 6D 
+     65 20 32 00     772       TITLE2: .AZ             " Name 2"
+7C60                773                       .NO             $7C60,$00
+7C60-20 4E 61 6D 
+     65 20 33 00     774       TITLE3: .AZ             " Name 3"
+7C80                775                       .NO             $7C80,$00
+7C80-20 4E 61 6D 
+     65 20 34 00     776       TITLE4: .AZ             " Name 4"
+7CA0                777                       .NO             $7CA0,$00
+7CA0-20 4E 61 6D 
+     65 20 35 00     778       TITLE5: .AZ             " Name 5"
+7CC0                779                       .NO             $7CC0,$00
+7CC0-20 4E 61 6D 
+     65 20 36 00     780       TITLE6: .AZ             " Name 6"
+7CE0                781                       .NO             $7CE0,$00
+7CE0-20 4E 61 6D 
+     65 20 37 00     782       TITLE7: .AZ             " Name 7"
+7D00                783                       .NO             $7D00,$00
+7D00-20 4E 61 6D 
+     65 20 38 00     784       TITLE8: .AZ             " Name 8"
+7D20                785                       .NO             $7D20,$00
+7D20-20 4E 61 6D 
+     65 20 39 00     786       TITLE9: .AZ             " Name 9"
+7D40                787                       .NO             $7D40,$00
+7D40-                788       TITLE10:
+7D40-20 4E 61 6D 
+     65 20 41 00     789                       .AZ             " Name A"
+7D60                790                       .NO             $7D60,$00
+7D60-                791       TITLE11:
+7D60-20 4E 61 6D 
+     65 20 42 00     792                       .AZ             " Name B"
+7D80                793                       .NO             $7D80,$00
+7D80-                794       TITLE12:
+7D80-20 4E 61 6D 
+     65 20 43 00     795                       .AZ             " Name C"
+7DA0                796                       .NO             $7DA0,$00
+7DA0-                797       TITLE13:
+7DA0-20 4E 61 6D 
+     65 20 44 00     798                       .AZ             " Name D"
+7DC0                799                       .NO             $7DC0,$00
+7DC0-                800       TITLE14:
+7DC0-20 4E 61 6D 
+     65 20 45 00     801                       .AZ             " Name E"
+7DE0                802                       .NO             $7DE0,$00
+7DE0-                803       TITLE15:
+7DE0-20 4E 61 6D 
+     65 20 46 00     804                       .AZ             " Name F"
+7FFC                805                       .NO             $7FFC,$00
+7FFC-                806       SLOT_COUNT:
+7FFC-03              807                       .DB             3
+7FFD-00              808                       .DB             0
+7FFE-00              809                       .DB             0
+7FFF-00              810                       .DB             0

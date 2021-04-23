@@ -1,0 +1,83 @@
+0000-                  4                       .OR             $0000
+0000-                  5
+0000-                  6                       .IN             constants.asm
+4000-            I     1       SCREEN                  .EQU    $4000                   ; 16384
+1800-            I     2       SZ_SCRN                 .EQU    $1800                   ; 6144  256*192 pixels, 8-pixels per byte
+5800-            I     3       ATTR                    .EQU    $5800                   ; 22528
+0300-            I     4       SZ_ATTR                 .EQU    $300                    ; 768   32*24 8-pixel blocks
+0060-            I     5       SZ_FONT                 .EQU    $60                             ; 96
+5CC0-            I     6       VARS                    .EQU    $5CC0                   ; 23744, used as start of variable space
+0400-            I     7       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
+0000-            I     8
+001F-            I     9       CONTROL_BANK    .EQU    31                              ; ZX Interface 2.021 bank control port
+003F-            I    10       CONTROL_LED             .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
+0000-            I    11
+0000-            I    12       ; Keyboard row definitions
+0000-            I    13       ;                                        Bit     0   1 2 3 4
+FEFE-            I    14       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
+FBFE-            I    15       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
+FDFE-            I    16       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
+F7FE-            I    17       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
+EFFE-            I    18       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
+DFFE-            I    19       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
+BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
+7FFE-            I    21       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
+6000-                  7       TARGET  .EQU    $6000                   ; Payload target RAM start
+2000-                  8       SZ_RAM  .EQU    $2000                   ; Maximum payload size
+0000-                  9
+0000-21 00 05         10 ( 10) MAIN:   LD              HL,BOOT_SCREEN  ; Set location of boot screen data
+0003-CD 18 00         11 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
+0006-CD 0C 00         12 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
+0009-C3 00 60         13 ( 10)                 JP              TARGET                  ; Start execution of payload program.
+000C-                 14
+000C-                 15       COPY_TO_RAM:
+000C-21 00 20         16 ( 10)                 LD              HL,PAYLOAD              ; Set source location
+000F-01 00 20         17 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
+0012-11 00 60         18 ( 10)                 LD              DE,TARGET               ; Set target location
+0015-ED B0            19 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
+0017-C9               20 ( 10)                 RET
+0018-                 21
+0018-                 22       LIB_SCR:                                                ; Routines for copying SCR into screen memory
+0018-                 23                       .IN             lib_scr.asm
+0018-            I     1       ;
+0018-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
+0018-            I     3       ; screen memory as well as corresponding attribute data. HL points
+0018-            I     4       ; to start of data.
+0018-            I     5       ;
+0018-            I     6       SHOW_SCR:
+0018-D5          I     7 ( 11)                 PUSH    DE
+0019-DD E5       I     8 ( 15)                 PUSH    IX
+001B-F5          I     9 ( 11)                 PUSH    AF
+001C-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
+0020-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
+0023-            I    12       NEXT_BYTE:
+0023-7E          I    13 (  7)                 LD              A,(HL)
+0024-23          I    14 (  6)                 INC             HL
+0025-            I    15
+0025-DD 77 00    I    16 ( 19)                 LD              (IX),A
+0028-DD 23       I    17 ( 10)                 INC             IX
+002A-            I    18
+002A-1B          I    19 (  6)                 DEC             DE
+002B-7A          I    20 (  4)                 LD              A,D
+002C-B3          I    21 (  4)                 OR              E
+002D-C2 23 00    I    22 ( 10)                 JP              NZ,NEXT_BYTE
+0030-F1          I    23 ( 10)                 POP             AF
+0031-DD E1       I    24 ( 14)                 POP             IX
+0033-D1          I    25 ( 10)                 POP             DE
+0034-C9          I    26 ( 10)                 RET
+0035-                 24
+0400                 25                       .NO             $0400
+0400-                 26       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
+0400-5A 58 20 49 
+     6E 74 65 72 
+     66 61 63 65 
+     20 32 2E 30 
+     32 31 00         27                       .AZ             "ZX Interface 2.021"
+0413-                 28
+0500                 29                       .NO             $0500
+0500-                 30       BOOT_SCREEN:
+0500-                 31                       .BI             boot.scr
+2000-                 32
+2000-                 33                       .NO             $2000
+2000-                 34       PAYLOAD:
+2000-                 35                       .BI             selector.bin
