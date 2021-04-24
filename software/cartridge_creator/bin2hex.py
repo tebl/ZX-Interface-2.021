@@ -3,6 +3,13 @@ import sys
 from argparse import ArgumentParser
 
 class Bin2Hex:
+    '''
+    Extremely simple, probably buggy, binary to Intel HEX conversion tool,
+    converted from some Arduino code I did for the RC-ONE computer. Takes
+    a binary file as input and writes it out as an Intel HEX-formatted file,
+    supporting up to 
+    '''
+
     RECORD_DATA = 0x00
     RECORD_EOF = 0x01
     RECORD_ELA = 0x04
@@ -21,27 +28,39 @@ class Bin2Hex:
         self.input_file.close()
     
     def process(self, record_size=16):
-        self.add_record_ela()
         address = 0
+        segment = 0
         
         while True:
+            if address == 0:
+                self.add_record_ela(segment)
+
             bytes_read = self.input_file.read(record_size)
             if bytes_read:
                 self.add_record_data(address, list(map(int, bytes_read)))
                 address += len(bytes_read)
+
+                if address == 0x10000:
+                    segment += 1
+                    address = 0
             else:
                 break
         
         self.add_record_eof()
         return address
 
-    def add_record_ela(self):
+    def add_record_ela(self, counter):
         '''
-        Adds a header specifying Extended Linear Addressing, it is mainly just
-        here so that the generated file is identical to my control sample. It
-        doesn't add much of a difference for such small files.
+        Adds a header specifying Extended Linear Addressing, while not needed
+        for files up to 64K in size - anything above won't fit directly into
+        the 16-bit addressing scheme supported by the standard data records.
+        An ELA record specifies the upper 16-bit of the 32-bit addresses
+        needed for larger sizes relevant for this project, we just use it to
+        count the number of 64K segments seen.
         '''
-        self.add_record(0x0000, self.RECORD_ELA, [0, 0])
+        counter_hi = (counter & 0xFF00) >> 8
+        counter_lo = counter & 0x00FF
+        self.add_record(0x0000, self.RECORD_ELA, [counter_hi, counter_lo])
 
     def add_record_eof(self):
         '''
@@ -82,6 +101,11 @@ class Bin2Hex:
         return format(data, '04X')
 
     def intel_checksum(self, data, adress_hi, adress_lo, record_type):
+        '''
+        Generates an Intel HEX checksum value, essentially it sums all of the
+        byte-pairs in the record before calculating 2s complement. It's maths,
+        I hate it and it works so don't mess with it.
+        '''
         x = sum([
             len(data),
             adress_hi,
