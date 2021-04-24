@@ -28,6 +28,7 @@ class Bin2Hex:
         self.input_file.close()
     
     def process(self, record_size=16):
+        counter = 0
         address = 0
         segment = 0
         
@@ -39,6 +40,7 @@ class Bin2Hex:
             if bytes_read:
                 self.add_record_data(address, list(map(int, bytes_read)))
                 address += len(bytes_read)
+                counter += len(bytes_read)
 
                 if address == 0x10000:
                     segment += 1
@@ -47,7 +49,7 @@ class Bin2Hex:
                 break
         
         self.add_record_eof()
-        return address
+        return counter
 
     def add_record_ela(self, counter):
         '''
