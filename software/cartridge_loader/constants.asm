@@ -4,10 +4,12 @@ ATTR			.EQU	$5800			; 22528
 SZ_ATTR			.EQU	$300			; 768   32*24 8-pixel blocks
 SZ_FONT 		.EQU	$60				; 96
 VARS			.EQU	$5CC0			; 23744, used as start of variable space
+STACK			.EQU	$5F00			; Stack decrement down from here	
 SIGNATURE		.EQU	$0400			; Software signature, used when checking banks.
 
-CONTROL_BANK	.EQU	31				; ZX Interface 2.021 bank control port
-CONTROL_LED		.EQU	63				; LED for ZX Diagnostic 2.021 cartridge
+CTRL_BANK		.EQU	31				; ZX Interface 2.021 bank control port
+CTRL_LED		.EQU	63				; LED for ZX Diagnostic 2.021 cartridge
+CTRL_BORDER		.EQU	254				; Controls the screen border
 
 ; Keyboard row definitions
 ;                                        Bit     0   1 2 3 4

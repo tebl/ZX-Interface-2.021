@@ -6,6 +6,7 @@
 *.bck
 *.kicad_pcb-bak
 *.zip
+*.log
 *.sch-bak
 
 # Netlist files (exported from Eeschema)
@@ -18,11 +19,13 @@ resources/
 software/Testing
 software/cartridge_loader/__debug.bat
 software/cartridge_loader/test.bat
+software/cartridge_loader/ZXSpin
 software/cartridge_creator/*.bin
 software/cartridge_creator/*.hex
 software/cartridge_creator/cartridges/*
 software/cartridge_creator/cartridges/*/*.bin
 !software/cartridge_creator/cartridges/blank/
+software/cartridge_creator/ZXSpin
 
 faceplates/ZX Cartridge 2021 FA2 Hungry Horace/
 faceplates/ZX Cartridge 2021 FA3 Horace and the Spiders/

@@ -436,9 +436,9 @@ GET_BANK_IDENTIFIER:
 ;
 SET_BANK:
 		DI						; Disable interrupts
-		LD		C,CONTROL_LED	; Controls LEDs found on ZX Diagnostic 2.021
+		LD		C,CTRL_LED		; Controls LEDs found on ZX Diagnostic 2.021
 		OUT		(C),A			;  so let's just write the value to it.
-		LD		C,CONTROL_BANK	; Port used for controlling the bank switching
+		LD		C,CTRL_BANK		; Port used for controlling the bank switching
 		OUT		(C),A			;  we write the same value.
 .CHECK:	LD		HL,SIGNATURE	; Banks should now have been switched around,	
 		LD		A,(HL)			;  but in order	to make sure we'll check.

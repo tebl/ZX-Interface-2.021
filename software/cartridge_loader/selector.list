@@ -7,21 +7,23 @@
 0300-            I     4       SZ_ATTR                 .EQU    $300                    ; 768   32*24 8-pixel blocks
 0060-            I     5       SZ_FONT                 .EQU    $60                             ; 96
 5CC0-            I     6       VARS                    .EQU    $5CC0                   ; 23744, used as start of variable space
-0400-            I     7       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
-6000-            I     8
-001F-            I     9       CONTROL_BANK    .EQU    31                              ; ZX Interface 2.021 bank control port
-003F-            I    10       CONTROL_LED             .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
-6000-            I    11
-6000-            I    12       ; Keyboard row definitions
-6000-            I    13       ;                                        Bit     0   1 2 3 4
-FEFE-            I    14       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
-FBFE-            I    15       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
-FDFE-            I    16       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
-F7FE-            I    17       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
-EFFE-            I    18       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
-DFFE-            I    19       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
-BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
-7FFE-            I    21       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
+5F00-            I     7       STACK                   .EQU    $5F00                   ; Stack decrement down from here
+0400-            I     8       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
+6000-            I     9
+001F-            I    10       CTRL_BANK               .EQU    31                              ; ZX Interface 2.021 bank control port
+003F-            I    11       CTRL_LED                .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
+00FE-            I    12       CTRL_BORDER             .EQU    254                             ; Controls the screen border
+6000-            I    13
+6000-            I    14       ; Keyboard row definitions
+6000-            I    15       ;                                        Bit     0   1 2 3 4
+FEFE-            I    16       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
+FBFE-            I    17       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
+FDFE-            I    18       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
+F7FE-            I    19       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
+EFFE-            I    20       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
+DFFE-            I    21       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
+BFFE-            I    22       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
+7FFE-            I    23       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
 6000-                  7                       .IN             attributes.asm  ; Attribute definitions
 0000-            I     1       A_BLACK         .EQU    %00000000
 0001-            I     2       A_BLUE          .EQU    %00000001
@@ -530,9 +532,9 @@ BFFE-            I    20       KR_EN_LKJH              .EQU    $BFFE            
 6266-                436       ;
 6266-                437       SET_BANK:
 6266-F3              438 (  4)                 DI                                              ; Disable interrupts
-6267-0E 3F           439 (  7)                 LD              C,CONTROL_LED   ; Controls LEDs found on ZX Diagnostic 2.021
+6267-0E 3F           439 (  7)                 LD              C,CTRL_LED              ; Controls LEDs found on ZX Diagnostic 2.021
 6269-ED 79           440 ( 12)                 OUT             (C),A                   ;  so let's just write the value to it.
-626B-0E 1F           441 (  7)                 LD              C,CONTROL_BANK  ; Port used for controlling the bank switching
+626B-0E 1F           441 (  7)                 LD              C,CTRL_BANK             ; Port used for controlling the bank switching
 626D-ED 79           442 ( 12)                 OUT             (C),A                   ;  we write the same value.
 626F-21 00 04        443 ( 10) .CHECK: LD              HL,SIGNATURE    ; Banks should now have been switched around,
 6272-7E              444 (  7)                 LD              A,(HL)                  ;  but in order to make sure we'll check.

@@ -4,6 +4,7 @@
 		.OR		$0000
 
 		.IN		constants.asm
+		.IN		attributes.asm
 TARGET	.EQU	$6000			; Payload target RAM start
 SZ_RAM	.EQU	$2000			; Maximum payload size
 
@@ -13,18 +14,22 @@ SZ_RAM	.EQU	$2000			; Maximum payload size
 ; vectors are simply put here just in case the CPU retains something from
 ; previously run software.
 ;
-RESET:	DI						; Disable interrupts
-		JP		MAIN
+RESET:	JP		MAIN			; Just restart the main program.
 		.NO		$0008,$FF
-RST_08:	RETI
+RST_08:	JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 		.NO		$0010,$FF
-RST_10:	RETI
+RST_10:	JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 		.NO		$0018,$FF
-RST_18:	RETI
+RST_18:	JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 		.NO		$0028,$FF
-RST_28:	RETI
+RST_28:	JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 		.NO		$0030,$FF
-RST_30:	RETI
+RST_30:	JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 
 ;
 ; This is the standard maskable interrupt entrypoint that is normally used
@@ -32,8 +37,9 @@ RST_30:	RETI
 ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
 ;
 		.NO		$0038,$FF
-RST_38:	DI						; Disable interrupts
-		RETI
+RST_38:	DI
+		JP		MAIN			; Just restart the main program.
+		RETI					; We won't get here.
 
 ;
 ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
@@ -42,7 +48,8 @@ RST_38:	DI						; Disable interrupts
 ; it.
 ;
 		.NO		$0066,$FF
-RST_66:	JP		RESET			; Jump to the regular RESET routine
+RST_66:	DI
+		JP		MAIN			; Jump to the regular RESET routine
 		RETN					; We won't get here.
 
 ;
@@ -52,7 +59,15 @@ RST_66:	JP		RESET			; Jump to the regular RESET routine
 ; payload to a RAM location and then start it from there.
 ;
 		.NO		$0100,$FF
-MAIN:	LD		HL,BOOT_SCREEN	; Set location of boot screen data
+MAIN:	DI						; Disable interrupts (just to be safe)
+		LD		HL,STACK		; Load stack address to use
+		LD		SP,HL			;  then configure it for use.
+		IM		1				; Set interrupt mode 1
+		LD		A,A_BLACK		; Load black colour into A
+		LD		C,CTRL_BORDER	;  and use it to initialize
+		OUT		(C),A			;  the border colour.
+		
+		LD		HL,BOOT_SCREEN	; Set location of boot screen data
 		CALL	SHOW_SCR		; Copy boot image to screen memory
 		CALL	COPY_TO_RAM		; Copy payload data to new RAM location
 		JP		TARGET			; Start execution of payload program.
