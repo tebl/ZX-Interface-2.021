@@ -7,8 +7,12 @@ from settings import Settings
 settings = Settings('cartridge.ini')
 
 def create(name, chip_size, chip_count):
+    '''
+    Creates a blank cartridge with a few of the most common configuration
+    options in it, mainly intended for later editing and customization.
+    '''
     dir_path = os.path.join('cartridges', name)
-    CartridgeFile.create(dir_path, chip_size, chip_count)
+    CartridgeFile.create(dir_path, chip_size, chip_count, settings)
 
 def verify(name):
     '''
@@ -52,15 +56,21 @@ def parse_arguments():
 
     errors = False
     for dirname in args.create:
-        create(dirname, args.chip_size, args.chip_count)
-    
-    for dirname in args.verify:
         try:
-            verify(dirname)
-            print()
+            create(dirname, args.chip_size, args.chip_count)
         except Exception as err:
             errors = True
             print("Uncaught exception verifying {0} ({1})".format(dirname, err))
+            break
+    
+    if not errors:
+        for dirname in args.verify:
+            try:
+                verify(dirname)
+                print()
+            except Exception as err:
+                errors = True
+                print("Uncaught exception verifying {0} ({1})".format(dirname, err))
 
     if not errors:
         for dirname in args.process:

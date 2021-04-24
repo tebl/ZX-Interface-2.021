@@ -738,7 +738,7 @@ MSG_TITLE:
 		.AZ		"       ZX INTERFACE 2.021       "
 MSG_HELP:
 		.AS		"   (? = 8  ? = 9  START = 0)    "
-		.AZ		"        (Q = ZX Basic)"
+		.AZ		"        (Q = ZX Basic)         "
 ERR_TITLE:
 		.AZ		"             ERROR             "
 ERR_MSG:
@@ -750,7 +750,7 @@ FONT_SYMBOLS:
 		.IN		font_symbols.asm
 		.NO		$7500,$FF
 FONT1:	.BI		font1.bin
-		.NO		$7830,$FF
+		.NO		$7800,$FF
 FONT2:	.BI		font2.bin
 
 		.NO		$7C00,$FF

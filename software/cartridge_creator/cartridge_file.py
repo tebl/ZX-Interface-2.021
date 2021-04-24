@@ -108,7 +108,7 @@ class CartridgeFile:
             raise ValueError("Size can't be 0")
         return value
 
-    def create(dir_path, chip_size, chip_count):
+    def create(dir_path, chip_size, chip_count, program_settings):
         '''
         Create a blank cartridge configuration with a few of the available
         options already filled in, this is mostly just the basics.
@@ -121,13 +121,17 @@ class CartridgeFile:
         config.set('Cartridge', 'Title', '"Blank cartridge"')
         config.set('Cartridge', 'ChipSize', str(chip_size))
         config.set('Cartridge', 'ChipCount', str(chip_count))
-        config.set('Cartridge', ';BootScreen=boot.scr')
         config.set('Cartridge', 'BaseName', 'cartridge')
         config.set('Cartridge', ';BasePath=..\\..\\')
-
+        config.set('Cartridge', ';BootScreen=boot.scr')
+        config.set('Cartridge', ';Font1=Computer')
+        config.set('Cartridge', ';Font2=MSX')
+        
         blank_path = os.path.join(dir_path, 'blank.rom')
-        with open(blank_path, 'wb') as blank_file:
-            blank_file.write(bytes([255]) * ROM_SIZE)
+        with open(program_settings.blank_slot, 'rb') as input_file:
+            with open(blank_path, 'wb') as blank_file:
+                blank_file.write(input_file.read())
+
         for chip_id in range(0, chip_count):
             slots = range(0, chip_to_slots(chip_size)) 
             if chip_id == 0:
@@ -174,8 +178,10 @@ class CartridgeFile:
                 
                 # Replace default fonts
                 self.file_fast_forward(selector_address(0x7500), input_file, output_file)
-                self.file_add_fonts(input_file, output_file)
-
+                self.file_add_font('Font1', input_file, output_file)
+                self.file_fast_forward(selector_address(0x7800), input_file, output_file)
+                self.file_add_font('Font2', input_file, output_file)
+        
                 # Write cartridge and slot titles at $7C00
                 self.file_fast_forward(selector_address(0x7C00), input_file, output_file)
                 self.file_add_slot_titles(input_file, output_file)
@@ -252,19 +258,12 @@ class CartridgeFile:
             return self.get_source_file('BootScreen')
         return None
 
-    def file_add_fonts(self, input_file, output_file, indent_count=2):
-        self.file_add_font('Font1', input_file, output_file, indent_count)
-        self.file_add_font('Font2', input_file, output_file, indent_count)
-    
     def file_add_font(self, key, input_file, output_file, indent_count=2):
         font_path = self.get_font_path(key)
-        if font_path == None:
-            self.file_fast_forward(input_file.tell() + FONT_SIZE, input_file, output_file)
-        else:
+        if font_path != None:
             print_result(f"Copy <{key}>", font_path, '...', indent_count)
             num_bytes = self.file_inject_font(font_path, input_file, output_file, indent_count + 1)
-            pad_bytes = self.file_write_padding(num_bytes, FONT_SIZE, output_file, indent_count + 1)
-            print_result(f"Copy <{key}>", format_number(num_bytes + pad_bytes, format='human'), 'END', indent_count)
+            print_result(f"Copy <{key}>", format_number(num_bytes, format='human'), 'END', indent_count)
 
     def get_font_path(self, key):
         if self.have_setting(key):
@@ -473,8 +472,9 @@ class CartridgeFile:
             if path != None and os.path.isfile(path):
                 print_result(key, self.setting(key), 'OK', indent_count)
                 return True
-        print_result(key, 'Missing!', 'ERR', indent_count)
-        return False
+            print_result(key, 'Missing!', 'ERR', indent_count)
+            return False
+        return True
 
     def verify_chip(self, chip_id):
         for slot_id in self.get_slots(chip_id):
