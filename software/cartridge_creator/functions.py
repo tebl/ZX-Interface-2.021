@@ -5,6 +5,11 @@ def format_hex(value, pad_length = 4):
     Format value for display in hex, suitable for displaying values used with
     common 8-bit systems with 16-bit addressing.
     '''
+    if pad_length == 4:
+        return '0x' + format(value, '04X')
+    elif pad_length == 2:
+        return '0x' + format(value, '02X')
+        
     s = hex(value)[2:]
     s = ('0' * (pad_length - len(s))) + s.upper()
     return '0x' + s
