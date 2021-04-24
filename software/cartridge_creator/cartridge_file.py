@@ -1,5 +1,6 @@
 import os
 from configparser import ConfigParser
+from bin2hex import Bin2Hex
 from functions import *
 
 class CartridgeFile:
@@ -22,10 +23,11 @@ class CartridgeFile:
     def get_input_path(self):
         return self.program_settings.loader
 
-    def get_target_file(self, chip_id):
-        return os.path.join(
-            self.get_basepath(),
-            f"{self.get_basename()}{chip_id}.{self.program_settings.output_extension}")
+    def get_target_file(self, chip_id, file_format='bin'):
+        filename = f"{self.get_basename()}{chip_id}.{self.program_settings.output_extension}"
+        if file_format == 'hex':
+            filename = f"{self.get_basename()}{chip_id}.hex"
+        return os.path.join(self.get_basepath(), filename)
 
     def get_source_file(self, key, section = 'Cartridge'):
         return os.path.join(self.dir_path, self.setting(key, section))
@@ -165,7 +167,7 @@ class CartridgeFile:
         loader. When we finish with that, any remaining ROM slots are written
         out to the same file.
         '''
-        target_file = self.get_target_file(chip_id)
+        target_file = self.get_target_file(chip_id, 'bin')
         print_result('(E)EPROM image', target_file, '...')
         self.bytes_written = 0
         with open(target_file, 'wb') as output_file:
@@ -192,10 +194,10 @@ class CartridgeFile:
 
             # Write remaining slots for this chip
             for slot_id in self.get_slots(chip_id):
-                self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)        
-
+                self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)                        
         status = self.process_bytecount(target_file)
         print_result('(E)EPROM image', status['parameter'], status['result'])
+        self.file_convert_hex(target_file, self.get_target_file(chip_id, 'hex'))
 
     def process_chipN(self, chip_id):
         '''
@@ -207,10 +209,10 @@ class CartridgeFile:
         self.bytes_written = 0
         with open(target_file, 'wb') as output_file:
             for slot_id in self.get_slots(chip_id):
-                self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)    
-
+                self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)
         status = self.process_bytecount(target_file)
         print_result('(E)EPROM image', status['parameter'], status['result'])
+        self.file_convert_hex(target_file, self.get_target_file(chip_id, 'hex'))
 
     def process_bytecount(self, target_file):
         '''
@@ -388,6 +390,23 @@ class CartridgeFile:
             self.bytes_written += len(bytes_read)
         input_file.seek(input_file.tell() + len(bytes_read))
         return len(bytes_read)
+        
+    def file_convert_hex(self, source_file, target_file, indent_count=1):
+        '''
+        Converts the specified source file to Intel HEX-format, written to path
+        specified as target_file. This is only done if the option is enabled in
+        the main program configuration.
+        '''
+        if self.program_settings.generate_hex:
+            with Bin2Hex(source_file, target_file) as converter:
+                print_result('Generate Intel HEX', target_file, '   ', indent_count)
+                num_bytes = converter.process()
+                print_result(
+                    'Data', 
+                    f"{format_number(num_bytes, format='human')}, {source_file}", 
+                    'ADD', 
+                    indent_count + 1
+                )
 
     def verify(self):
         '''

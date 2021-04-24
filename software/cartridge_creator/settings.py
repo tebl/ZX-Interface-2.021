@@ -9,8 +9,10 @@ class Settings:
         self.create_or_read()
 
     def __getattr__(self, attr):
+        if attr == 'generate_hex':
+            return self.config.getboolean('Settings', attr)
         return self.get('Settings', attr)
-
+        
     def create_or_read(self):
         if os.path.isfile(self.config_path):
             self.config.read(self.config_path)
@@ -21,6 +23,7 @@ class Settings:
         self.set_defaults('Settings','output_extension', 'bin')
         self.set_defaults('Settings','output_basename', 'cartridge')
         self.set_defaults('Settings','default_title', 'Cartridge Loader')
+        self.set_defaults('Settings','generate_hex', 'yes')
         
         if self.changed:
             with open(self.config_path, 'w') as configfile:
