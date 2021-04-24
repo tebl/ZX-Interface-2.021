@@ -1,0 +1,207 @@
+0000-                  4                       .OR             $0000
+0000-                  5
+0000-                  6                       .IN             constants.asm
+4000-            I     1       SCREEN                  .EQU    $4000                   ; 16384
+1800-            I     2       SZ_SCRN                 .EQU    $1800                   ; 6144  256*192 pixels, 8-pixels per byte
+5800-            I     3       ATTR                    .EQU    $5800                   ; 22528
+0300-            I     4       SZ_ATTR                 .EQU    $300                    ; 768   32*24 8-pixel blocks
+0060-            I     5       SZ_FONT                 .EQU    $60                             ; 96
+5CC0-            I     6       VARS                    .EQU    $5CC0                   ; 23744, used as start of variable space
+5F00-            I     7       STACK                   .EQU    $5F00                   ; Stack decrement down from here
+0400-            I     8       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
+0000-            I     9
+001F-            I    10       CTRL_BANK               .EQU    31                              ; ZX Interface 2.021 bank control port
+003F-            I    11       CTRL_LED                .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
+00FE-            I    12       CTRL_BORDER             .EQU    254                             ; Controls the screen border
+0000-            I    13
+0000-            I    14       ; Keyboard row definitions
+0000-            I    15       ;                                        Bit     0   1 2 3 4
+FEFE-            I    16       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
+FBFE-            I    17       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
+FDFE-            I    18       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
+F7FE-            I    19       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
+EFFE-            I    20       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
+DFFE-            I    21       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
+BFFE-            I    22       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
+7FFE-            I    23       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
+0000-                  7                       .IN             attributes.asm
+0000-            I     1       A_BLACK         .EQU    %00000000
+0001-            I     2       A_BLUE          .EQU    %00000001
+0002-            I     3       A_RED           .EQU    %00000010
+0003-            I     4       A_MAGENTA       .EQU    %00000011
+0004-            I     5       A_GREEN         .EQU    %00000100
+0005-            I     6       A_CYAN          .EQU    %00000101
+0006-            I     7       A_YELLOW        .EQU    %00000110
+0007-            I     8       A_WHITE         .EQU    %00000111
+0000-            I     9
+0000-            I    10       A_P_BLACK       .EQU    A_BLACK<<3
+0008-            I    11       A_P_BLUE        .EQU    A_BLUE<<3
+0010-            I    12       A_P_RED         .EQU    A_RED<<3
+0018-            I    13       A_P_MAGENTA     .EQU    A_MAGENTA<<3
+0020-            I    14       A_P_GREEN       .EQU    A_GREEN<<3
+0028-            I    15       A_P_CYAN        .EQU    A_CYAN<<3
+0030-            I    16       A_P_YELLOW      .EQU    A_YELLOW<<3
+0038-            I    17       A_P_WHITE       .EQU    A_WHITE<<3
+0000-            I    18
+0040-            I    19       A_BRIGHT        .EQU    %01000000
+0080-            I    20       A_FLASH         .EQU    %10000000
+0000-                  8       ;
+0000-                  9       ; This is the main program entrypoint when first starting up, also run when
+0000-                 10       ; the user hits the reset button on the interface. The rest of the reset
+0000-                 11       ; vectors are simply put here just in case the CPU retains something from
+0000-                 12       ; previously run software.
+0000-                 13       ;
+0000-C3 00 01         14 ( 10) RESET:  JP              MAIN                    ; Just restart the main program.
+0008                 15                       .NO             $0008,$FF
+0008-C3 00 01         16 ( 10) RST_08: JP              MAIN                    ; Just restart the main program.
+000B-ED 4D            17 ( 14)                 RETI                                    ; We won't get here.
+0010                 18                       .NO             $0010,$FF
+0010-C3 00 01         19 ( 10) RST_10: JP              MAIN                    ; Just restart the main program.
+0013-ED 4D            20 ( 14)                 RETI                                    ; We won't get here.
+0018                 21                       .NO             $0018,$FF
+0018-C3 00 01         22 ( 10) RST_18: JP              MAIN                    ; Just restart the main program.
+001B-ED 4D            23 ( 14)                 RETI                                    ; We won't get here.
+0028                 24                       .NO             $0028,$FF
+0028-C3 00 01         25 ( 10) RST_28: JP              MAIN                    ; Just restart the main program.
+002B-ED 4D            26 ( 14)                 RETI                                    ; We won't get here.
+0030                 27                       .NO             $0030,$FF
+0030-C3 00 01         28 ( 10) RST_30: JP              MAIN                    ; Just restart the main program.
+0033-ED 4D            29 ( 14)                 RETI                                    ; We won't get here.
+0035-                 30
+0035-                 31       ;
+0035-                 32       ; This is the standard maskable interrupt entrypoint that is normally used
+0035-                 33       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
+0035-                 34       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
+0035-                 35       ;
+0038                 36                       .NO             $0038,$FF
+0038-F3               37 (  4) RST_38: DI
+0039-C3 00 01         38 ( 10)                 JP              MAIN                    ; Just restart the main program.
+003C-ED 4D            39 ( 14)                 RETI                                    ; We won't get here.
+003E-                 40
+003E-                 41       ;
+003E-                 42       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
+003E-                 43       ; this needs to be here so that pushing the NMI button on the interface doesn't
+003E-                 44       ; simply crash the code - it'll jump here, expecting the code to be ready for
+003E-                 45       ; it.
+003E-                 46       ;
+0066                 47                       .NO             $0066,$FF
+0066-F3               48 (  4) RST_66: DI
+0067-C3 00 01         49 ( 10)                 JP              MAIN                    ; Jump to the regular RESET routine
+006A-ED 45            50 ( 14)                 RETN                                    ; We won't get here.
+006C-                 51
+006C-                 52       ;
+006C-                 53       ; Main program, relocated here to stay clear of the ROM space associated with
+006C-                 54       ; the various interrupts. The code will run only once; copying the boot screen
+006C-                 55       ; into the screen memory, copy the payload program ("selector program") from
+006C-                 56       ; payload to a RAM location and then start it from there.
+006C-                 57       ;
+0100                 58                       .NO             $0100,$FF
+0100-F3               59 (  4) MAIN:   DI                                              ; Disable interrupts (just to be safe)
+0101-21 00 5F         60 ( 10)                 LD              HL,STACK                ; Load stack address to use
+0104-F9               61 (  6)                 LD              SP,HL                   ;  then configure it for use.
+0105-ED 56            62 (  8)                 IM              1                               ; Set interrupt mode 1
+0107-3E 00            63 (  7)                 LD              A,A_BLACK               ; Load black colour into A
+0109-0E FE            64 (  7)                 LD              C,CTRL_BORDER   ;  and use it to initialize
+010B-ED 79            65 ( 12)                 OUT             (C),A                   ;  the border colour.
+010D-                 66
+010D-21 00 05         67 ( 10)                 LD              HL,BOOT_SCREEN  ; Set location of boot screen data
+0110-CD 18 01         68 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
+0113-CD 35 01         69 ( 17) .LOOP:  CALL    DELAY
+0116-18 FB            70 ( 12)                 JR              .LOOP                   ; Loop forever.
+0118-                 71
+0118-                 72       LIB_SCR:                                                ; Routines for copying SCR into screen memory
+0118-                 73                       .IN             lib_scr.asm
+0118-            I     1       ;
+0118-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
+0118-            I     3       ; screen memory as well as corresponding attribute data. HL points
+0118-            I     4       ; to start of data.
+0118-            I     5       ;
+0118-            I     6       SHOW_SCR:
+0118-D5          I     7 ( 11)                 PUSH    DE
+0119-DD E5       I     8 ( 15)                 PUSH    IX
+011B-F5          I     9 ( 11)                 PUSH    AF
+011C-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
+0120-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
+0123-            I    12       NEXT_BYTE:
+0123-7E          I    13 (  7)                 LD              A,(HL)
+0124-23          I    14 (  6)                 INC             HL
+0125-            I    15
+0125-DD 77 00    I    16 ( 19)                 LD              (IX),A
+0128-DD 23       I    17 ( 10)                 INC             IX
+012A-            I    18
+012A-1B          I    19 (  6)                 DEC             DE
+012B-7A          I    20 (  4)                 LD              A,D
+012C-B3          I    21 (  4)                 OR              E
+012D-C2 23 01    I    22 ( 10)                 JP              NZ,NEXT_BYTE
+0130-F1          I    23 ( 10)                 POP             AF
+0131-DD E1       I    24 ( 14)                 POP             IX
+0133-D1          I    25 ( 10)                 POP             DE
+0134-C9          I    26 ( 10)                 RET
+0135-                 74       LIB_DLY:
+0135-                 75                       .IN             lib_delay.asm
+0135-            I     1       ;
+0135-            I     2       ; Performs a simple 16-bit delay loop. I've got no idea of the actual timings,
+0135-            I     3       ; but it feels like a little over a second.
+0135-            I     4       ;
+0135-C5          I     5 ( 11) DELAY:  PUSH    BC
+0136-D5          I     6 ( 11)                 PUSH    DE
+0137-01 00 04    I     7 ( 10)                 LD              BC,$0400
+013A-11 00 01    I     8 ( 10)                 LD              DE,$0100
+013D-CD 51 01    I     9 ( 17)                 CALL    CUSTOM_DELAY
+0140-D1          I    10 ( 10)                 POP             DE
+0141-C1          I    11 ( 10)                 POP             BC
+0142-C9          I    12 ( 10)                 RET
+0143-            I    13
+0143-            I    14       KEY_DELAY:
+0143-C5          I    15 ( 11)                 PUSH    BC
+0144-D5          I    16 ( 11)                 PUSH    DE
+0145-01 55 00    I    17 ( 10)                 LD              BC,$0055
+0148-11 55 00    I    18 ( 10)                 LD              DE,$0055
+014B-CD 51 01    I    19 ( 17)                 CALL    CUSTOM_DELAY
+014E-D1          I    20 ( 10)                 POP             DE
+014F-C1          I    21 ( 10)                 POP             BC
+0150-C9          I    22 ( 10)                 RET
+0151-            I    23
+0151-            I    24
+0151-            I    25       ;
+0151-            I    26       ; Custom delay routine, uses just about anything to burn as many cycles as
+0151-            I    27       ; possible. Load BC for an outer loop count, DE for an inner loop to control
+0151-            I    28       ; how much time this routine uses. For the exact timings, someone'd need to
+0151-            I    29       ; count the cycles and divide it by CPU frequency.
+0151-            I    30       ;
+0151-            I    31       CUSTOM_DELAY:
+0151-C5          I    32 ( 11)                 PUSH    BC                              ; Save current registers, mainly because we
+0152-D5          I    33 ( 11)                 PUSH    DE                              ; overwrite just about anything and we need
+0153-F5          I    34 ( 11)                 PUSH    AF                              ; the calling routines to stay working.
+0154-E5          I    35 ( 11)                 PUSH    HL
+0155-7A          I    36 (  4)                 LD              A,D                             ; Let's save the starting value of DE - there's
+0156-67          I    37 (  4)                 LD              H,A                             ; probably an easier way, but that requires
+0157-7B          I    38 (  4)                 LD              A,E                             ; reading.
+0158-6F          I    39 (  4)                 LD              L,A
+0159-7C          I    40 (  4) .OUTER: LD              A,H                             ; Restore initial DE value
+015A-57          I    41 (  4)                 LD              D,A
+015B-7D          I    42 (  4)                 LD              A,L
+015C-5F          I    43 (  4)                 LD              E,A
+015D-1B          I    44 (  6) .INNER: DEC             DE
+015E-7A          I    45 (  4)                 LD              A,D                             ; Decrementing DE does not set Z-flag, so we'll
+015F-B3          I    46 (  4)                 OR              E                               ;  need to do do this. It's a quirk.
+0160-C2 5D 01    I    47 ( 10)                 JP              NZ,.INNER               ; If DE not 0, then do inner loop again.
+0163-0B          I    48 (  6)                 DEC             BC                              ; Z-flag. Again.
+0164-78          I    49 (  4)                 LD              A,B
+0165-B1          I    50 (  4)                 OR              C
+0166-C2 59 01    I    51 ( 10)                 JP              NZ,.OUTER               ; If BE not 0, then do outer loop again.
+0169-E1          I    52 ( 10)                 POP             HL                              ; Restore registers that were overwritten.
+016A-F1          I    53 ( 10)                 POP             AF
+016B-D1          I    54 ( 10)                 POP             DE
+016C-C1          I    55 ( 10)                 POP             BC
+016D-C9          I    56 ( 10)                 RET
+016E-                 76
+0400                 77                       .NO             $0400
+0400-                 78       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
+0400-42 6C 61 6E 
+     6B 20 53 6C 
+     6F 74 00         79                       .AZ             "Blank Slot"
+040B-                 80
+0500                 81                       .NO             $0500
+0500-                 82       BOOT_SCREEN:
+0500-                 83                       .BI             blank.scr

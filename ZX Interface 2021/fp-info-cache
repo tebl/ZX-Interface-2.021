@@ -1,4 +1,4 @@
-19070985766771157
+19074220364430749
 1n4148
 D_DO-35_SOD27_P2.54mm_Vertical_AnodeUp
 Diode, DO-35_SOD27 series, Axial, Vertical, pin pitch=2.54mm, , length*diameter=4*2mm^2, , http://www.diodes.com/_files/packages/DO-35.pdf
@@ -83076,6 +83076,13 @@ varistor SIOV
 2
 2
 artwork
+cartridge_label
+
+
+0
+0
+0
+artwork
 cartridge_title
 
 
@@ -83194,6 +83201,13 @@ ZX_Spectrum_Cartridge
 0
 40
 40
+zx_spectrum
+ZX_Spectrum_Cartridge_Original
+
+
+0
+28
+28
 zx_spectrum
 ZX_Spectrum_Cartridge_Port
 Through hole straight pin header, 2x28, 2.54mm pitch, double rows
