@@ -7,12 +7,14 @@ There are other more modern implementations for putting together a ZX Spectrum c
 
 ![ZX Diagnostic 2.021](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/2021-04-01%2002.16.15.jpg)
 
-Over to the improvements then, of which there are mainly just one that hasn't already been mentioned (the first one being the elimination of custom IC, for which there are no replacements). The other one is that logic for bank switching has been integrated into the interface, in its current state it allows you to access up to 512k ROMs in 16k segments. Four of them actually, bringing the maximum addressable ROM up to a whopping 4096 MB (that's 4096KB, not merely 4 Mbit).
+Over to the improvements then, of which there are mainly just one that hasn't already been mentioned (the first one being the elimination of custom IC, for which there are no replacements). The other one is that logic for bank switching has been integrated into the interface, in its current state it allows you to access up to 512k ROMs in 16k segments. Four of them actually, bringing the maximum addressable ROM up to a whopping 4MB (that's 4096KB, not merely 4 Mbit).
 
 ![ZX Cartridge 2.021](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_cartridge_004.jpg)
 ![ZX Diagnostic 2.021](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_diagnostic_007.jpg)
 
-The cartridges available mostly will have some different attributes, so you'll need to check out the README for each one of them to access all relevant information. When starting out I recommend starting with the diagnostic cartridge, it supports a single EPROM of up to 64K - giving you access to four 16K ROM images that can be switched between. The ZX Spectrum computer doesn't exactly expect you to hot-swap them this way, so there is a need to add a loader program to ensure that the program starts correctly (until that actually exists, just switch active image and hit the NMI button - that usually works). The diagnostic software I'm using by Brendan Alford, will attempt to write state information to the LEDs on port 63. You can also play around with them directly from basic, just do an "*OUT 63, 255*" - to turn all of them on. Battlestar Galactica fans will intuitively know what tomorrows project ought to be!
+The cartridges available mostly will have some different attributes, so you'll need to check out the README for each one of them to access all relevant information. When starting out I recommend starting with the diagnostic cartridge, it supports a single EPROM of up to 64K - giving you access to four 16K ROM images that you can switch between by using a technique called [bank switching](https://github.com/tebl/ZX-Interface-2.021/blob/main/documentation/bank_switching.md). The ZX Spectrum computer doesn't exactly expect you to hot-swap them this way, so there is a need to add a [Cartridge Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/cartridge_loader) program to ensure that the program starts correctly. To make things a bit easier on myself when it comes to creating cartridge compilations, I've put together a [Cartridge Creator](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/cartridge_creator) that automates tasks as well as supporting updating the loader program with bank titles as well as changing out the boot screen with ZX Spectrum SCR-files.
+
+The diagnostic software I'm using by Brendan Alford, will attempt to write state information to the LEDs on port 63. You can also play around with them directly from basic, just do an "*OUT 63, 255*" - to turn all of them on. Battlestar Galactica fans will intuitively know what tomorrows project ought to be!
 
 ![ZX Diagnostic 2.021 FA1](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/build_diagnostic_008.jpg)
 
@@ -49,3 +51,4 @@ I'm not good enough to just intuitively know how everything works by looking at 
 * https://k1.spdns.de/Vintage/Sinclair/82/Doityourself/IF2%20cartridges/
 * https://blog.gjmccarthy.co.uk/wp-content/uploads/2019/12/how.html
 * http://www.fruitcake.plus.com/Sinclair/Interface2/Interface/Interface2_Circuitry.htm
+* http://trastero.speccy.org/cosas/droy/cartuchos/cartuchos_s.htm
