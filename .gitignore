@@ -25,6 +25,8 @@ software/cartridge_creator/*.hex
 software/cartridge_creator/cartridges/*
 software/cartridge_creator/cartridges/*/*.bin
 !software/cartridge_creator/cartridges/blank/
+!software/cartridge_creator/cartridges/basic/
+!software/cartridge_creator/cartridges/basic/cartridge0.bin
 software/cartridge_creator/ZXSpin
 
 faceplates/ZX Cartridge 2021 FA2 Hungry Horace/
