@@ -31,7 +31,7 @@ As previously mentioned, the Cartridge Loader is a program intended for flashing
 
 The loader functions in a two-stage manner, the first thing it'll do is copy itself out of the ROM and into the computers RAM then it'll start executing instructions from that location - this is done while the boot screen is being displayed. Relocating the code to RAM avoids the common bank switching pitfalls, as the RAM stays where it is while we switch around the ROM banks. Once all of that is done, the program will display a menu - allowing the user to select from any of the other 16K banks (using either a joystick or the keyboard keys as listed on the screen).
 
-![Boot screen](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/2021-04-25%2001.12.04.jpg)
+![Loader menu](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/2021-04-25%2001.12.04.jpg)
 
 You can find the [Cartridge Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/cartridge_loader) as a file named [loader.rom](https://github.com/tebl/ZX-Interface-2.021/blob/main/software/cartridge_loader/loader.rom), make sure that you click the *Download*-button on that page instead of right-clicking and selecting *save link as* - we want to save a copy of the ROM and not a web page describing it. You can refer to the document [Flash (E)PROM](https://github.com/tebl/ZX-Interface-2.021/blob/main/documentation/flash_eeprom.md) for more details on manually combining ROM-files and then flashing them onto an (E)EPROM.
 
