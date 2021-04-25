@@ -25,7 +25,7 @@ Either it works or it just crashed the basic, try hitting the *NMI* button to se
 Try some of the other values until you find something to have fun with. Setting bit 6 high allows you to access banks on the *ROM 1* socket, meaning you'd write value from 64 through 67 instead.
 
 # 2> Cartridge Loader
-As previously mentioned, the [Cartridge Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/cartridge_loader) is a program intended for flashing into the first 16K bank of any of the regular ZX Interface 2.021 cartridges - it is the first thing that runs when the computer is powered up with the cartridge inserted. Because I couldn't help myself and had already commited to using the entire 16K bank for this purpuse, I added a pretty little boot screen.
+As previously mentioned, the Cartridge Loader is a program intended for flashing into the first 16K bank of any of the regular ZX Interface 2.021 cartridges - it is the first thing that runs when the computer is powered up with the cartridge inserted. Because I couldn't help myself and had already commited to using the entire 16K bank for this purpuse, I added a pretty little boot screen to it as well. Note that there is also a specific [Cartridge Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/cartridge_loader) page, this is where you'll find more information on tools used to assemble the code.
 
 ![Boot screen](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/2021-04-25%2001.12.02.jpg)
 
