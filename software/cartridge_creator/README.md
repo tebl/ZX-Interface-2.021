@@ -62,7 +62,7 @@ The output from my system is shown below, you just go through the list and ensur
 
 ![Cartridge Creator](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/cartridge_creator_005.jpg)
 
-## 2.2> Processing cartridge
+## 2.3> Processing cartridge
 Processing a cartridge means actually going through the routines to generate the resulting *.bin* files (as well as Intel HEX files), these are the files that you need when you want to [flash your (E)EPROMs]([flashing](https://github.com/tebl/ZX-Interface-2.021/blob/main/documentation/flash_eeprom.md)). It's recommended that you [verify the cartridge](#21-verifying-the-cartridge) before going on with this step, mainly to catch the more obvious mistakes before using these routines - mainly because of the information overload.
 
 The following command verifies the cartridge definition for a cartridge named test:
