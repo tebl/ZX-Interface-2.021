@@ -21,4 +21,4 @@ I've tried quite a few solutions for developing, assembling and testing out code
 ![ZXSpin Options](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/ZXSpin_Options.png)
 
 # 2> References
-Everything comes from something, so does every bit of code created from earlier code found in manuals and blogs. Particularly was a series of blog posts on a site called [Break into program](http://www.breakintoprogram.co.uk/) as well as a copy of *Spectrum Machine language for the absolute beginner* by William Tang.
+Everything comes from something, so does every bit of code created from earlier code found in manuals and blogs. Particularly helpful was a series of blog posts on a site called [Break into program](http://www.breakintoprogram.co.uk/) which in addition of a copy of *Spectrum Machine language for the absolute beginner* by William Tang inspired most of the code. The bugs are probably all mine.
