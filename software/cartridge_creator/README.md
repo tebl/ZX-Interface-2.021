@@ -5,6 +5,12 @@ I did not want to change the assembly source every time I wanted to change some 
 
 Currently it supports generating a blank cartridge, with a specified count of (E)EPROMs the user want to install on their cartridge as well as the size of them (mixing sizes is not supported). You can verify an existing cartridge definition, such as those included in the repository, as well as process a definiton in order to generate Intel HEX-files that can be used when [flashing](https://github.com/tebl/ZX-Interface-2.021/blob/main/documentation/flash_eeprom.md) the chips.
 
+- [1> Requirements](#1-requirements)
+- [2> Using the tools](#2-using-the-tools)
+  - [2.1> Creating a blank cartridge](#21-creating-a-blank-cartridge)
+  - [2.2> Verifying a cartridge](#22-verifying-a-cartridge)
+  - [2.3> Processing cartridge](#23-processing-cartridge)
+
 # 1> Requirements
 The scripts do not require anything other than a standard installation of [Python](https://www.python.org/), it should be available for all of the modern operating systems. though I don't have the ability to test on anything other than my Windows laptop. There will be some Windows batch included in the project, you can use them if you prefer or you can have a look at their contents to determine what they're attempting to do. 
 
@@ -45,7 +51,7 @@ The *Cartridge Creator* also supports replacing a few of the assets used by the 
 
 **Font1** is used for the title at the top, **Font2** is used for the rest. The value here should match any of the fonts found within the fonts-directory, the case is ignored and the name corresponds to a file named *fonts/font_<name>.bin*. The fonts were adapted for the ZX Spectrum by Jim Blimey and there are pictures of each one on his [blog](https://www.jimblimey.com/blog/24-zx-spectrum-fonts/).
 
-## 2.2> Verifying the cartridge
+## 2.2> Verifying a cartridge
 Somehow I ended up writing a lot of verification code to ensure that the options entered into the cartridge definition, for a description of most of the stuff that goes into them - see [Creating a blank cartridge](#21-creating-a-blank-cartridge). The idea is that you run through the verification routines and it spits out most of your errors in an understandable format.
 
 The following command verifies the cartridge definition for a cartridge named *test*:
