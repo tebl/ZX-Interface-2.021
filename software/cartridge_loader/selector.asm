@@ -259,20 +259,18 @@ GET_TITLE_ADDR:
 ;
 READ_INPUT:
 		PUSH	HL
-		PUSH	BC
-		LD		BC,KR_09876		; Keys 6 through 0
-		CALL	READ_ROW		; Read row,
-		CP		$1F				;  check if no keys are pressed?
-		JR		Z,.CHK_Q		; Yes, so we go check Q instead.
-		CALL	HANDLE_KEY		; No, so we'll need to process the key.
-		JR		.DONE			; We don't want to do anything more.
+.JOY1:	CALL	READ_JOY1		; Read joystick 1, sets Z if no keys pressed.
+		JR		Z,.JOY2			;  Check next joystick on no keys in use.
+		JR		.DONE			;  Done for now if we've detected a key.
+.JOY2:	CALL	READ_JOY2		; Read joystick 1, sets Z if no keys pressed.
+		JR		Z,.CHK_Q		;  No keys pressed, so we go check Q instead.
+		JR		.DONE			;  Done for now if we've detected a key.
 .CHK_Q:	LD		BC,KR_QWERT		; Check for Q key
 		CALL	READ_ROW		; Read corresponding keyboard row.
 		AND		%00000001		; Is Q pressed?
-		JR		NZ,.DONE		; No, then we are done.
-		JP		START_BASIC		; Yes, then we go start basic.
-.DONE:	POP		BC
-		POP		HL
+		JR		NZ,.DONE		;  No, then we are done.
+		JP		START_BASIC		;  Yes, then we go start ZX Basic.
+.DONE:	POP		HL
 		RET
 
 ;
@@ -290,29 +288,73 @@ READ_ROW:
 ; we've detected the release of the key (mostly to avoid having to
 ; deal with key repeat delays).
 ;
-HANDLE_KEY:
+READ_JOY1:
+		PUSH	BC
+		LD		BC,KR_09876		; Keys 6 through 9
+		CALL	READ_ROW		; Read row,
+		CP		%00011111		;  check if no keys are pressed?
+		JR		Z,.DONE			; Yes, so we go check Q instead.
+
 		PUSH	DE
 		LD		(LAST_K),A		; Store key for later
 .AGAIN:	CALL	KEY_DELAY
 		CALL	READ_ROW		; Read row again, and then
-		CP		$1F				;  check if all keys released.
+		CP		%00011111		;  check if no keys are pressed?
 		JR		Z,.RELEASED		; Yes, so go do something.
 		JR		.AGAIN
 .RELEASED:
 		POP		DE
 		LD		A,(LAST_K)		; Read it back again.
-.CHK_9:	CP		$1D				; Bit 1 is zero for UP
+.CHK_9:	CP		%00011101		; Bit 1 is zero for UP
 		JR		NZ,.CHK_8		; Next key, unless we have a match.
 		CALL	MOVE_UP
 		JR		.DONE
-.CHK_8:	CP		$1B				; Bit 2 is zero for DOWN
+.CHK_8:	CP		%00011011		; Bit 2 is zero for DOWN
 		JR		NZ,.CHK_0		; Next key, unless we have a match.
 		CALL	MOVE_DOWN
 		JR		.DONE
-.CHK_0:	CP		$1E				; Bit 0 is zero for FIRE
+.CHK_0:	CP		%00011110		; Bit 0 is zero for FIRE
 		JR		NZ,.DONE		; Done checking, unless we have a match.
-		CALL	PRESS_FIRE	
-.DONE:	RET
+		CALL	PRESS_FIRE
+.DONE:	POP		BC
+		CP		%00011111		; Update Z-flag to indicate no key
+		RET
+
+;
+; Handles a detected key press, but we delay exectution until
+; we've detected the release of the key (mostly to avoid having to
+; deal with key repeat delays).
+;
+READ_JOY2:
+		PUSH	BC
+		LD		BC,KR_12345		; Keys 1 through 5
+		CALL	READ_ROW		; Read row,
+		CP		%00011111		;  check if no keys are pressed?
+		JR		Z,.DONE			; Yes, so we go check Q instead.
+
+		PUSH	DE
+		LD		(LAST_K),A		; Store key for later
+.AGAIN:	CALL	KEY_DELAY
+		CALL	READ_ROW		; Read row again, and then
+		CP		%00011111		;  check if all keys released.
+		JR		Z,.RELEASED		; Yes, so go do something.
+		JR		.AGAIN
+.RELEASED:
+		POP		DE
+		LD		A,(LAST_K)		; Read it back again.
+.CHK_4:	CP		%00010111		; Bit 3 is zero for UP
+		JR		NZ,.CHK_3		; Next key, unless we have a match.
+		CALL	MOVE_UP
+		JR		.DONE
+.CHK_3:	CP		%00011011		; Bit 2 is zero for DOWN
+		JR		NZ,.CHK_5		; Next key, unless we have a match.
+		CALL	MOVE_DOWN
+		JR		.DONE
+.CHK_5:	CP		%00001111		; Bit 4 is zero for FIRE
+		JR		NZ,.DONE		; Done checking, unless we have a match.
+		CALL	PRESS_FIRE
+.DONE:	POP		BC
+		RET
 
 ;
 ; Move selection up, decrementing the index as we go. The code ensures that
