@@ -48,11 +48,16 @@ class CartridgeFile:
             return self.setting('Title')
         return self.program_settings.default_title
 
-    def get_rom_source_file(self, chip_id, slot_id):
-        return self.get_source_file('FileName', format_identifier(chip_id, slot_id))
-
     def get_rom_title(self, chip_id, slot_id):
-        return self.setting('Title', format_identifier(chip_id, slot_id))
+        section = format_identifier(chip_id, slot_id)
+        if self.is_rom_enabled(chip_id, slot_id):
+            return self.setting('Title', section)
+        return 'Empty slot'
+
+    def is_rom_enabled(self, chip_id, slot_id):
+        if self.is_enabled('Empty', format_identifier(chip_id, slot_id)):
+            return False
+        return True
 
     def get_chips(self):
         '''
@@ -134,6 +139,7 @@ class CartridgeFile:
             with open(blank_path, 'wb') as blank_file:
                 blank_file.write(input_file.read())
 
+        slot_added = False
         for chip_id in range(0, chip_count):
             slots = range(0, chip_to_slots(chip_size)) 
             if chip_id == 0:
@@ -142,8 +148,14 @@ class CartridgeFile:
             for slot_id in slots:
                 section = format_identifier(chip_id, slot_id)
                 config.add_section(section)
-                config.set(section, 'Title', '"Blank slot"')
-                config.set(section, 'FileName', 'blank.rom')
+                if not slot_added:
+                    config.set(section, 'Title', '"Blank slot"')
+                    config.set(section, 'FileName', 'blank.rom')
+                    slot_added = True
+                else:
+                    config.set(section, 'Empty', 'Yes')
+                    config.set(section, ';Title="Blank slot"')
+                    config.set(section, ';FileName=blank.rom')
 
         with open(os.path.join(dir_path, '_cartridge.ini'), 'w') as config_file:
             config.write(config_file)
@@ -214,6 +226,18 @@ class CartridgeFile:
         print_result('(E)EPROM image', status['parameter'], status['result'])
         self.file_convert_hex(target_file, self.get_target_file(chip_id, 'hex'))
 
+    def get_rom_source_file(self, chip_id, slot_id):
+        '''
+        Should return the path to the ROM file that will copied into the 
+        cartridge, in the case of a cartridge set to empty we'll use the
+        blank_slot ROM. This covers all the bases in case the user sets
+        the banking register using basic.
+        '''
+        section = format_identifier(chip_id, slot_id)
+        if self.is_rom_enabled(chip_id, slot_id):
+            return self.get_source_file('FileName', section)
+        return self.program_settings.blank_slot
+
     def process_bytecount(self, target_file):
         '''
         Compares the expected number of bytes against what was counted in the
@@ -281,7 +305,6 @@ class CartridgeFile:
         print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count)
         return num_bytes
 
-
     def file_add_slot_titles(self, input_file, output_file, indent_count=2):
         '''
         Add slot titles to the output, overriding those that are coded into the
@@ -329,11 +352,25 @@ class CartridgeFile:
     def get_slot_counters(self):
         '''
         Get a byte array with count of valid slots, suitable for injecting
-        into the loader.
+        into the loader. Blank slots will be filled using a placeholder ROM,
+        these will not be counted against the slot counters. Empty slots must
+        be placed as the last slots, but we'll need at least one slot filled
+        for things to make sense.
         '''
         slots = []
         for chip_id in range(0,4):
-            slots.append(bytes([len(self.get_slots(chip_id))]))
+            count = 0
+            blank_seen = False
+            for slot_id in self.get_slots(chip_id):
+                if self.is_rom_enabled(chip_id, slot_id):
+                    if blank_seen:
+                        raise RuntimeError('Data encountered after blank slot')
+                    count += 1
+                else:
+                    blank_seen = True
+            if chip_id == 0 and count == 0:
+                raise RuntimeError('No slots specified')
+            slots.append(bytes([count]))
         return slots
 
     def file_write_byte(self, data, output_file):
@@ -416,10 +453,11 @@ class CartridgeFile:
         before we get to this point.
         '''
         print(f"Verifying data for '{self.dir_path}':")
+        self.verify_loader()
+        self.verify_placeholder()
+        self.verify_basepath()
         print_result('Directory', self.dir_path, 'OK')
         print_result('Definition', self.definition, 'OK')
-        self.verify_loader()
-        self.verify_basepath()
         print()
         
         self.verify_section('Cartridge')
@@ -444,7 +482,15 @@ class CartridgeFile:
             return True
         print_result('Loader ROM', f"{signature}, {self.get_input_path()}", 'ERR')
         return False
-        
+    
+    def verify_placeholder(self):
+        path = self.program_settings.blank_slot
+        if os.path.isfile(path):
+            print_result('Blank ROM', path, 'OK', indent_count=1)
+            return True
+        print_result('Blank ROM', 'Missing!', 'ERR', indent_count=1)
+        return False
+    
     def verify_read_signature(self):
         signature = []
         position = 0
@@ -496,8 +542,21 @@ class CartridgeFile:
         return True
 
     def verify_chip(self, chip_id):
+        self.blank_seen = False
         for slot_id in self.get_slots(chip_id):
-            self.verify_cartridge(format_identifier(chip_id, slot_id))
+            section = format_identifier(chip_id, slot_id)
+            self.verify_section(section)
+            if self.have_section(section):
+                if self.is_rom_enabled(chip_id, slot_id):
+                    if self.blank_seen:
+                        print_result('Slot not empty', 'All empty slots must be added to the end', 'ERR', indent_count=2)
+                    else:
+                        self.verify_key('Title', section)
+                        self.verify_file('Filename', section)
+                else:
+                    print_result('Empty slot', 'Rest of definition skipped', 'OK', indent_count=2)
+                    self.blank_seen = True
+        print()
 
     def verify_chip_count(self):
         '''
@@ -522,13 +581,6 @@ class CartridgeFile:
         except ValueError as e:
             print_result(name, f"Invalid value ({e})", 'ERR', indent_count=2)
         return False
-
-    def verify_cartridge(self, section):
-        self.verify_section(section)
-        if self.have_section(section):
-            self.verify_key('Title', section)
-            self.verify_file('Filename', section)
-        print()
 
     def verify_key(self, key, section = 'Cartridge'):
         '''
@@ -566,3 +618,12 @@ class CartridgeFile:
         missing - use have_setting first to ensure we have a valid value first.
         '''
         return self.config[section][key].strip('"')
+        
+    def is_enabled(self, key, section = 'Cartridge', default_value = False):
+        '''
+        Check whether a key used to specifiy a boolean value equates to True,
+        the values yes/no as well as true/false can be used as expected.
+        '''
+        if not self.have_setting(key, section):
+            return default_value
+        return self.config.getboolean(section, key)
