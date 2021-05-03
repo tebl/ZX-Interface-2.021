@@ -42,9 +42,10 @@ class SnapshotFile(OutputHandler):
         config.optionxform = lambda option: option
         config.add_section('Cartridge')
         config.set('Cartridge', 'Type', 'Snapshot')
-        config.set('Cartridge', 'BaseName', 'cartridge')
         config.set('Cartridge', ';BasePath=..\\..\\')
+        config.set('Cartridge', 'BaseName', 'cartridge')
         config.set('Cartridge', 'FileName', 'loader.sna')
+        config.set('Cartridge', ';LoaderAddress = 0xFFF0')
 
         definition = os.path.join(dir_path, '_cartridge.ini')
         with open(definition, 'w') as config_file:
@@ -62,7 +63,8 @@ class SnapshotFile(OutputHandler):
             with open(self.get_source_file('FileName'), 'rb') as snapshot:
                 self.header = snapshot.read(27)
                 self.update_all_fields()
-                self.print_header()
+                print_result('Header', '', '', indent_count=2)
+                self.print_header(indent_count=3)
                 for bank_id in range(0,4):
                     base_address = 0x4000 * bank_id
 
@@ -90,6 +92,15 @@ class SnapshotFile(OutputHandler):
 
 
     def file_write_loader_address(self, output_file, indent_count=3):
+        '''
+        The routine used to perform the last steps in resuming a snapshot must
+        be placed in RAM, mostly because we'll be banking out the cartridge and
+        can't control what shows up in the programs place. When specified as
+        0x0000, we'll leave it to the snapshot_loader code running on the Z80
+        to guess at a suitable place, at the moment we'll just write below the
+        current stack. This requires 17 bytes, including 4 bytes left over for
+        actual stack usage.
+        '''
         data = self.get_loader_address()
         num_bytes = self.file_write_byte(data, output_file)
         data = list(map(format_hex8, data))
@@ -99,17 +110,15 @@ class SnapshotFile(OutputHandler):
     def get_loader_address(self):
         '''
         Ideally we'd like to add some logic here in order to locate space for
-        a 13-byte routine in RAM. The routine is used to perform the last steps
-        in resuming such as banking out the cartridge and setting the final
-        registers. A value of 0,0 just leaves this up to the snapshot_loader
-        code running on the Z80, it's try to write the routine below the current
-        stack value - in this case we'll need 17 bytes as we need to leave at
-        least 4 bytes for stack usage.
+        a 13-byte routine in RAM. At the moment we'll just leave it up to the
+        Z80 to figure out a position below stack, with the LoaderAddress
+        we can override this with a suitable starting address.
         '''
         address = 0
         if self.have_setting('LoaderAddress'):
             address = int(self.setting('LoaderAddress'), 16)
-        
+            if address < 0x4000:
+                raise ValueError('LoaderAddress can\'t be placed in ROM')
         address_hi = (address & 0xFF00) >> 8
         address_lo = address & 0x00FF
 
@@ -136,26 +145,38 @@ class SnapshotFile(OutputHandler):
 
     def verify_cartridge(self):
         super().verify_cartridge()
-        if self.verify_snapshot():
-            self.update_header()
-            self.print_header()
+        self.verify_snapshot()
+        self.verify_loader_address()
         
         
-    def verify_snapshot(self):
+    def verify_snapshot(self, indent_count=2):
         path = self.get_source_file('FileName')
         size = os.path.getsize(path)
         if size == SNAPSHOT_SIZE:
-            print_result('FileName', f"{path}, {format_number(size, format='human')}", 'OK', indent_count=2)
+            print_result('FileName', f"{path}, {format_number(size, format='human')}", 'OK', indent_count)
+            self.update_header()
+            self.print_header(indent_count + 1)
             return True
-        print_result('FileName', f"{path}, {format_number(size, format='human')}", 'ERR', indent_count=2)
+        print_result('FileName', f"{path}, {format_number(size, format='human')}", 'ERR', indent_count)
         raise ValueError('Snapshot file size mismatch')
         return False
         
+        
+    def verify_loader_address(self):
+        if self.have_setting('LoaderAddress'):
+            setting = self.setting('LoaderAddress')
+            try:
+                address_lo,address_hi = self.get_loader_address()
+                print_result('LoaderAddress', setting, 'OK', indent_count=2)
+                return True
+            except ValueError:
+                print_result('LoaderAddress', f"Invalid value '{setting}'", 'ERR', indent_count=2)
+        return False
+    
 
     def print_header(self, indent_count=2):
-        print_result('Header data', '', '', indent_count)
         for i, (k, v) in enumerate(self.fields.items()):
-            print_result(k, ', '.join(list(map(format_hex8, v))), '', indent_count + 1)
+            print_result(k, ', '.join(list(map(format_hex8, v))), ' ', indent_count)
     
         
     def update_header(self):

@@ -7,29 +7,6 @@ from settings import Settings
 
 settings = Settings('cartridge.ini')
 
-def verify(name):
-    '''
-    Attempts to verify the cartridge configuration matching the directory
-    name supplied. For the most part it should be able to tell you when
-    something's a little bit iffy, but it will crash on you.
-    '''
-    OutputHandler.get_instance(name, settings).verify()
-    # dir_path = os.path.join('cartridges', name)
-    # instance = get_handler(name, settings)
-    # file = CartridgeFile(dir_path, settings)
-    # instance.verify()
-
-
-def process(name):
-    '''
-    Process cartridge configuration, this will go through the configuration
-    file and use the settings added to generate a bin-file suitable for
-    flashing onto an (E)EPROM.
-    '''
-    OutputHandler.get_instance(name, settings).process()
-    # dir_path = os.path.join('cartridges', name)
-    # file = CartridgeFile(dir_path, settings)
-    # file.process()
 
 def parse_arguments():
     '''
@@ -55,33 +32,34 @@ def parse_arguments():
     errors = False
     if not errors:
         for dirname in args.create:
-            # try:
+            try:
                 OutputHandler.create(dirname, args, settings)
                 print()
-            # except Exception as err:
-                # errors = True
-                # print("Uncaught exception creating {0} ({1})".format(dirname, err))
-                # break
+            except Exception as err:
+                errors = True
+                print("Uncaught exception creating {0} ({1})".format(dirname, err))
+                break
     
     if not errors:
         for dirname in args.verify:
-            # try:
+            try:
                 OutputHandler.get_instance(dirname, settings).verify()
                 print()
-            # except Exception as err:
-                # errors = True
-                # print("Uncaught exception verifying {0} ({1})".format(dirname, err))
+            except Exception as err:
+                errors = True
+                print("Uncaught exception verifying {0} ({1})".format(dirname, err))
 
     if not errors:
         for dirname in args.process:
-            # try:
+            try:
                 OutputHandler.get_instance(dirname, settings).process()
                 print()
-            # except Exception as err:
-                # print("Uncaught exception processing {0} ({1})".format(dirname, err))
+            except Exception as err:
+                print("Uncaught exception processing {0} ({1})".format(dirname, err))
         
     print("Done.")
-    
+
+
 def chip_size(string):
     '''
     Converts specified chip size into something that can be used with the
@@ -94,6 +72,7 @@ def chip_size(string):
     if (int(value / 128) * 128) != value:
         raise ValueError(f"{string} does not appear to be a valid chip size")
     return value
+
 
 def chip_count(string):
     '''
@@ -110,6 +89,7 @@ def chip_count(string):
 def print_welcome():
     print("ZX Interface 2.021")
     print("------------------")
+
 
 if __name__ == "__main__":
     print_welcome()
