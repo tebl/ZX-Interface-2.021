@@ -14,6 +14,15 @@ def format_hex(value, pad_length = 4):
     s = ('0' * (pad_length - len(s))) + s.upper()
     return '0x' + s
 
+
+def format_hex8(value):
+    return format_hex(value, 2)
+
+
+def format_hex16(value):
+    return format_hex(value, 4)
+
+
 def format_number(value, format='human', no_si=False):
     '''
     Format a number for printing to the screen, it can display four digit hex
@@ -28,8 +37,9 @@ def format_number(value, format='human', no_si=False):
             return f"{int(value/1024)} KB"
     value = str(value)
     if not no_si:
-        value += ' Bytes'
+        value += ' bytes'
     return value
+
 
 def format_ascii_output(title, mode = TITLE_FORMAT_INDENT, size=32):
     '''
@@ -46,6 +56,7 @@ def format_ascii_output(title, mode = TITLE_FORMAT_INDENT, size=32):
     result = result + ([0] * (size - len(result)))
     return bytes(result)
 
+
 def convert_ascii_byte(char):
     '''
     The ZX Spectrum have a limited character set, so we'll just convert
@@ -60,11 +71,14 @@ def convert_ascii_byte(char):
         return 32
     return char
 
+
 def chip_to_bytes(chip_size):
     return int((chip_size / 8) * 1024)
 
+
 def chip_to_slots(chip_size):
     return int((chip_size / 8 / (ROM_SIZE / 1024)))
+
 
 def byte_to_int(a_byte):
     '''
@@ -72,7 +86,8 @@ def byte_to_int(a_byte):
     of doing bytes([4]) -> b'\x04'.
     '''
     return int.from_bytes(a_byte, 'big')
-    
+  
+  
 def print_result(description, parameter = '', result = '', indent_count = 1):
     '''
     Print task result, mainly just here in order to keep the information flow
@@ -85,6 +100,7 @@ def print_result(description, parameter = '', result = '', indent_count = 1):
     else:
         print(f"{(INDENT*indent_count + description).ljust(KEY_WIDTH)} {result}")
 
+
 def selector_address(address):
     '''
     The selector is assembled into the ROM, starting at $2000 and relocated
@@ -93,6 +109,7 @@ def selector_address(address):
     the file as we write it we need to subtract $4000 from the address.
     '''
     return (address - 0x4000)
+
 
 def format_identifier(chip_id, slot_id):
     return f"ROM {chip_id}-{slot_id}"

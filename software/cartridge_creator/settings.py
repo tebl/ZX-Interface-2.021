@@ -20,6 +20,7 @@ class Settings:
         # Update with defaults
         self.set_defaults('Settings','loader', 'loader.rom')
         self.set_defaults('Settings','blank_slot', 'blank_slot.rom')
+        self.set_defaults('Settings','snapshot', 'snapshot.rom')
         self.set_defaults('Settings','output_extension', 'bin')
         self.set_defaults('Settings','output_basename', 'cartridge')
         self.set_defaults('Settings','default_title', 'Cartridge Loader')

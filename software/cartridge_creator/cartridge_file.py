@@ -1,27 +1,23 @@
 import os
 from configparser import ConfigParser
-from bin2hex import Bin2Hex
 from functions import *
+import output_handler
 
-class CartridgeFile:
+class CartridgeFile(output_handler.OutputHandler):
     def __init__(self, dir_path, program_settings):
-        self.dir_path = dir_path
-        if not os.path.isdir(self.dir_path):
-            raise FileNotFoundError(f"Cartridge directory '{dir_path}' does not exist")
-            
-        self.definition = os.path.join(self.dir_path, '_cartridge.ini')
-        if not os.path.isfile(self.definition):
-            raise FileNotFoundError(f"Cartridge definition file \'{self.definition}\' not found")
-        self.program_settings = program_settings
-
-        self.config = ConfigParser()
-        self.config.read(self.definition)
+        super().__init__(dir_path, program_settings)
         
         if not os.path.isfile(self.get_input_path()):
-            raise FileNotFoundError(f"Cartridge loader ROM \'{self.self.get_input_path()}\' not found")
+            raise FileNotFoundError(f"Cartridge loader ROM \'{self.get_input_path()}\' not found")
+
+
+    def cartridge_type(self):
+        return 'Cartridge'
+
 
     def get_input_path(self):
         return self.program_settings.loader
+
 
     def get_target_file(self, chip_id, file_format='bin'):
         filename = f"{self.get_basename()}{chip_id}.{self.program_settings.output_extension}"
@@ -29,24 +25,12 @@ class CartridgeFile:
             filename = f"{self.get_basename()}{chip_id}.hex"
         return os.path.join(self.get_basepath(), filename)
 
-    def get_source_file(self, key, section = 'Cartridge'):
-        return os.path.join(self.dir_path, self.setting(key, section))
-
-    def get_basename(self):
-        if self.have_setting('BaseName'):
-            return self.setting('BaseName')
-        return self.program_settings.output_basename
-
-    def get_basepath(self):
-        path = self.dir_path
-        if self.have_setting('BasePath'):
-            path = os.path.join(path, self.setting('BasePath'))
-        return os.path.relpath(path)
 
     def get_cartridge_title(self):
         if self.have_setting('Title'):
             return self.setting('Title')
         return self.program_settings.default_title
+
 
     def get_rom_title(self, chip_id, slot_id):
         section = format_identifier(chip_id, slot_id)
@@ -54,10 +38,12 @@ class CartridgeFile:
             return self.setting('Title', section)
         return 'Empty slot'
 
+
     def is_rom_enabled(self, chip_id, slot_id):
         if self.is_enabled('Empty', format_identifier(chip_id, slot_id)):
             return False
         return True
+
 
     def get_chips(self):
         '''
@@ -74,6 +60,7 @@ class CartridgeFile:
             raise ValueError("ChipCount maximum is 4")
         return range(0, value)
         
+        
     def get_slots(self, chip_id):
         '''
         Read configuration to determine the number of slots available to the
@@ -85,6 +72,7 @@ class CartridgeFile:
         if chip_id not in self.get_chips():
             return []
         return range(0, value)
+
 
     def get_slots_per_chip(self, chip_id):
         '''
@@ -98,6 +86,7 @@ class CartridgeFile:
         if chip_id == 0:
             value -= 1
         return value
+        
         
     def get_chip_size(self):
         '''
@@ -115,12 +104,14 @@ class CartridgeFile:
             raise ValueError("Size can't be 0")
         return value
 
+
     def create(dir_path, chip_size, chip_count, program_settings):
         '''
         Create a blank cartridge configuration with a few of the available
         options already filled in, this is mostly just the basics.
         '''
         print(f"Creating cartridge '{dir_path}':")
+        print_result('Type', 'Cartridge', 'OK')
         os.makedirs(dir_path, exist_ok=True)
         config = ConfigParser(allow_no_value=True)
         config.optionxform = lambda option: option
@@ -138,12 +129,14 @@ class CartridgeFile:
         with open(program_settings.blank_slot, 'rb') as input_file:
             with open(blank_path, 'wb') as blank_file:
                 blank_file.write(input_file.read())
+        print_result('Placeholder ROM', blank_path, 'OK')
 
         slot_added = False
         for chip_id in range(0, chip_count):
             slots = range(0, chip_to_slots(chip_size)) 
             if chip_id == 0:
                 slots = range(1, chip_to_slots(chip_size))
+            print_result(f"Chip ({chip_id})", f"{len(slots)} slots", 'ADD')
                 
             for slot_id in slots:
                 section = format_identifier(chip_id, slot_id)
@@ -156,9 +149,14 @@ class CartridgeFile:
                     config.set(section, 'Empty', 'Yes')
                     config.set(section, ';Title="Blank slot"')
                     config.set(section, ';FileName=blank.rom')
+                print_result(section, '', 'ADD', indent_count=2)
+                
 
-        with open(os.path.join(dir_path, '_cartridge.ini'), 'w') as config_file:
+        definition = os.path.join(dir_path, '_cartridge.ini')
+        with open(definition, 'w') as config_file:
             config.write(config_file)
+        print_result('Create definition', definition, 'OK')
+
 
     def process(self):
         '''
@@ -207,9 +205,10 @@ class CartridgeFile:
             # Write remaining slots for this chip
             for slot_id in self.get_slots(chip_id):
                 self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)                        
-        status = self.process_bytecount(target_file)
+        status = self.process_bytecount(target_file, int((self.get_chip_size() / 8) * 1024))
         print_result('(E)EPROM image', status['parameter'], status['result'])
         self.file_convert_hex(target_file, self.get_target_file(chip_id, 'hex'))
+
 
     def process_chipN(self, chip_id):
         '''
@@ -222,9 +221,10 @@ class CartridgeFile:
         with open(target_file, 'wb') as output_file:
             for slot_id in self.get_slots(chip_id):
                 self.file_copy_rom(self.get_rom_source_file(chip_id, slot_id), output_file)
-        status = self.process_bytecount(target_file)
+        status = self.process_bytecount(target_file, int((self.get_chip_size() / 8) * 1024))
         print_result('(E)EPROM image', status['parameter'], status['result'])
         self.file_convert_hex(target_file, self.get_target_file(chip_id, 'hex'))
+
 
     def get_rom_source_file(self, chip_id, slot_id):
         '''
@@ -238,34 +238,6 @@ class CartridgeFile:
             return self.get_source_file('FileName', section)
         return self.program_settings.blank_slot
 
-    def process_bytecount(self, target_file):
-        '''
-        Compares the expected number of bytes against what was counted in the
-        code. To ensure this actually completed OK, we'll compare the counted
-        number against what the operating system shows the size as.
-        '''
-        expected_size = int((self.get_chip_size() / 8) * 1024)
-        actual_size = os.path.getsize(target_file)
-        if self.bytes_written != actual_size:
-            return {'parameter': f"File size MISMATCH {format_number(actual_size, no_si=True)} found, expected {format_number(self.bytes_written, no_si=True)} Bytes", 'result': 'END'}
-
-        if self.bytes_written == expected_size:
-            return {'parameter': f"Size OK, {format_number(self.bytes_written, format='human')}", 'result': 'END'}
-        else:
-            return {'parameter': f"Size MISMATCH {format_number(self.bytes_written, no_si=True)}/{format_number(expected, no_si=True)} Bytes", 'result': 'END'}
-
-    def file_fast_forward(self, target, input_file, output_file, indent_count=2):
-        '''
-        Fast forward through the input file, writing all bytes to the output
-        until we come up on the specified target location. The location is not
-        inclusive, meaning that the next byte written will end up on the
-        address specified.
-        '''
-        num_bytes = target - output_file.tell()
-        bytes_read = input_file.read(num_bytes)
-        output_file.write(bytes_read)
-        self.bytes_written += len(bytes_read)
-        print_result(f"FF >>", format_number(target, format='address'), 'OK', indent_count)
 
     def file_add_boot_screen(self, input_file, output_file, indent_count=2):
         '''
@@ -279,10 +251,12 @@ class CartridgeFile:
         else:
             self.file_fast_forward(SCR_SIZE, input_file, output_file)
 
+
     def get_boot_screen(self):
         if self.have_setting('BootScreen'):
             return self.get_source_file('BootScreen')
         return None
+
 
     def file_add_font(self, key, input_file, output_file, indent_count=2):
         font_path = self.get_font_path(key)
@@ -291,6 +265,7 @@ class CartridgeFile:
             num_bytes = self.file_inject_font(font_path, input_file, output_file, indent_count + 1)
             print_result(f"Copy <{key}>", format_number(num_bytes, format='human'), 'END', indent_count)
 
+
     def get_font_path(self, key):
         if self.have_setting(key):
             font_path = os.path.join('fonts', f"font_{self.setting(key).strip().lower()}.bin")
@@ -298,12 +273,14 @@ class CartridgeFile:
                 return font_path
         return None
 
+
     def file_inject_font(self, font_path, input_file, output_file, indent_count=2):
         num_bytes = self.file_inject(FONT_SIZE, font_path, input_file, output_file, indent_count + 1)
         if num_bytes < 768 or num_bytes > FONT_SIZE:
             raise RuntimeError(f"Font file was wrong size ({font_path}, {format_number(num_bytes, format='human')})")
         print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count)
         return num_bytes
+
 
     def file_add_slot_titles(self, input_file, output_file, indent_count=2):
         '''
@@ -323,6 +300,7 @@ class CartridgeFile:
                     output_file, 
                     TITLE_FORMAT_INDENT, indent_count + 1)
 
+
     def file_add_title(self, title, input_file, output_file, mode = TITLE_FORMAT_INDENT, indent_count=2):
         '''
         Writes out a title to the ROM, this is always 32 characters including
@@ -333,6 +311,7 @@ class CartridgeFile:
         num_bytes = self.file_write_byte(data, output_file)
         input_file.seek(input_file.tell() + num_bytes)
         print_result('Data', title, 'ADD', indent_count)
+
 
     def file_add_slot_counters(self, input_file, output_file, indent_count=2):
         '''
@@ -348,6 +327,7 @@ class CartridgeFile:
             s.append(format_hex(byte_to_int(data), 2))
         input_file.seek(input_file.tell() + 4)
         print_result('Slot Counters', ' '.join(s), 'OK', indent_count)
+
 
     def get_slot_counters(self):
         '''
@@ -373,23 +353,6 @@ class CartridgeFile:
             slots.append(bytes([count]))
         return slots
 
-    def file_write_byte(self, data, output_file):
-        '''
-        Write bytes to on opened output file, not that while we are counting
-        written bytes - it is left to the calling function to handle any other
-        synchronization tasks (in the hope that this function can be re-used).
-        '''
-        if data.__class__ == list:
-            for byte in data:
-                output_file.write(byte)
-            self.bytes_written += len(data)
-            return len(data)
-        elif data.__class__ == bytes:
-            output_file.write(data)
-            self.bytes_written += len(data)
-            return len(data)
-        else:
-            raise ValueError('Data type unknown')
 
     def file_copy_rom(self, rom_path, output_file, indent_count=2):
         print_result('Copy <ROM>', rom_path, '...', indent_count)
@@ -397,6 +360,7 @@ class CartridgeFile:
         print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count + 1)
         pad_bytes = self.file_write_padding(num_bytes, ROM_SIZE, output_file, indent_count + 1)
         print_result('Copy <ROM>', format_number(num_bytes + pad_bytes, format='human'), 'END', indent_count)
+
 
     def file_write_padding(self, num_bytes, expected_bytes, output_file, indent_count=2, pad_value=255):
         padding = bytes([pad_value]) * (expected_bytes - num_bytes)
@@ -406,6 +370,7 @@ class CartridgeFile:
             print_result(f"Padding", format_number(len(padding), format='human'), 'OK', indent_count)
         return len(padding)
 
+
     def file_copy_into(self, num_bytes, file_path, output_file):
         with open(file_path, 'rb') as input_file:
             bytes_read = input_file.read(num_bytes)
@@ -413,13 +378,15 @@ class CartridgeFile:
             self.bytes_written += len(bytes_read)
         return len(bytes_read)
 
+
     def file_inject_scr(self, scr_path, input_file, output_file, indent_count=2):
         num_bytes = self.file_inject(SCR_SIZE, scr_path, input_file, output_file, indent_count + 1)
         if num_bytes != SCR_SIZE:
             raise RuntimeError(f"SCR file was wrong size ({scr_path}, {num_bytes} bytes)")
         print_result('Inject <SCR>', format_number(num_bytes, format='human'), 'OK', indent_count)
         return
-    
+   
+   
     def file_inject(self, num_bytes, inject_path, input_file, output_file, indent_count=2):
         with open(inject_path, 'rb') as inject_file:
             bytes_read = inject_file.read(num_bytes)
@@ -427,40 +394,23 @@ class CartridgeFile:
             self.bytes_written += len(bytes_read)
         input_file.seek(input_file.tell() + len(bytes_read))
         return len(bytes_read)
-        
-    def file_convert_hex(self, source_file, target_file, indent_count=1):
-        '''
-        Converts the specified source file to Intel HEX-format, written to path
-        specified as target_file. This is only done if the option is enabled in
-        the main program configuration.
-        '''
-        if self.program_settings.generate_hex:
-            with Bin2Hex(source_file, target_file) as converter:
-                print_result('Generate Intel HEX', target_file, '   ', indent_count)
-                num_bytes = converter.process()
-                print_result(
-                    'Data', 
-                    f"{format_number(num_bytes, format='human')}, {source_file}", 
-                    'ADD', 
-                    indent_count + 1
-                )
+
 
     def verify(self):
         '''
         Attempts to verify most of the user entered data in order to aid with
         usage, unknown errors may crop up as the codebase is mostly separate.
-        Main program values are assumed to be OK as an exception will be raised
-        before we get to this point.
+        Main program values are assumed to be OK as an exception should have
+        been raised before we get to this point.
         '''
-        print(f"Verifying data for '{self.dir_path}':")
+        super().verify()
         self.verify_loader()
         self.verify_placeholder()
-        self.verify_basepath()
-        print_result('Directory', self.dir_path, 'OK')
-        print_result('Definition', self.definition, 'OK')
         print()
-        
-        self.verify_section('Cartridge')
+        self.verify_cartridge()
+
+    def verify_cartridge(self):
+        super().verify_cartridge()
         self.verify_cartridge_title()
         if self.have_setting('BootScreen'):
             self.verify_file('BootScreen')
@@ -475,6 +425,7 @@ class CartridgeFile:
             for chip_id in self.get_chips():
                 self.verify_chip(chip_id)
     
+    
     def verify_loader(self):
         signature = self.verify_read_signature()
         if signature[:2] == 'ZX':
@@ -483,6 +434,7 @@ class CartridgeFile:
         print_result('Loader ROM', f"{signature}, {self.get_input_path()}", 'ERR')
         return False
     
+    
     def verify_placeholder(self):
         path = self.program_settings.blank_slot
         if os.path.isfile(path):
@@ -490,6 +442,7 @@ class CartridgeFile:
             return True
         print_result('Blank ROM', 'Missing!', 'ERR', indent_count=1)
         return False
+    
     
     def verify_read_signature(self):
         signature = []
@@ -504,28 +457,12 @@ class CartridgeFile:
                 position += 1
         return ''.join(signature)
 
-    def verify_basepath(self):
-        '''
-        Verifies that the basepath actually exists.
-        '''
-        path = self.get_basepath()
-        if os.path.isdir(path):
-            print_result('BasePath', path, 'OK')
-            return True
-        print_result('BasePath', f"{path} does not exist!", 'ERR')
-        return False
-
-    def verify_section(self, section):
-        if self.have_section(section):
-            print_result(section, '', 'OK')
-        else:
-            print_result(section, 'Missing!', 'ERR')
-        return True
 
     def verify_cartridge_title(self):
         print_result('Title', self.get_cartridge_title(), 'OK', indent_count=2)
         return True
-        
+      
+      
     def verify_font(self, key, indent_count=2):
         '''
         Verifies that the font specified corresponds to an existing file, we'll
@@ -541,22 +478,24 @@ class CartridgeFile:
             return False
         return True
 
-    def verify_chip(self, chip_id):
+
+    def verify_chip(self, chip_id, indent_count=2):
         self.blank_seen = False
         for slot_id in self.get_slots(chip_id):
             section = format_identifier(chip_id, slot_id)
-            self.verify_section(section)
+            self.verify_section(section, indent_count)
             if self.have_section(section):
                 if self.is_rom_enabled(chip_id, slot_id):
                     if self.blank_seen:
-                        print_result('Slot not empty', 'All empty slots must be added to the end', 'ERR', indent_count=2)
+                        print_result('Slot not empty', 'All empty slots must be added to the end', 'ERR', indent_count)
                     else:
-                        self.verify_key('Title', section)
-                        self.verify_file('Filename', section)
+                        self.verify_key('Title', section, indent_count + 1)
+                        self.verify_file('Filename', section, indent_count + 1)
                 else:
-                    print_result('Empty slot', 'Rest of definition skipped', 'OK', indent_count=2)
+                    print_result('Empty slot', 'Rest of definition skipped', 'OK', indent_count + 1)
                     self.blank_seen = True
         print()
+
 
     def verify_chip_count(self):
         '''
@@ -568,6 +507,7 @@ class CartridgeFile:
         except ValueError as e:
             print_result('ChipCount', f"Invalid value ({e})", 'ERR', indent_count=2)
         return False
+
 
     def verify_chip_size(self, chip_id):
         '''
@@ -581,49 +521,3 @@ class CartridgeFile:
         except ValueError as e:
             print_result(name, f"Invalid value ({e})", 'ERR', indent_count=2)
         return False
-
-    def verify_key(self, key, section = 'Cartridge'):
-        '''
-        Verifies that a configuration key exists, will print missing if we do
-        not have a value - usually it'll be required.
-        '''
-        if self.have_setting(key, section):
-            print_result(key, self.setting(key, section), 'OK', indent_count=2)
-            return True
-        print_result(key, 'Missing!', 'ERR', indent_count=2)
-        return False
-        
-    def verify_file(self, key, section = 'Cartridge', indent_count=2):
-        '''
-        Verifies that the filename specified actually exists.
-        '''
-        if self.have_setting(key, section):
-            filename = self.config[section][key]
-            path = os.path.join(self.dir_path, filename)
-            if os.path.isfile(path):
-                print_result(key, self.setting(key, section), 'OK', indent_count)
-                return True
-        print_result(key, 'Missing!', 'ERR', indent_count)
-        return False
-
-    def have_section(self, section):
-        return section in self.config
-
-    def have_setting(self, key, section = 'Cartridge'):
-        return key in self.config[section]
-
-    def setting(self, key, section = 'Cartridge'):
-        '''
-        Get configuration setting, will raise KeyError excetions when a key is
-        missing - use have_setting first to ensure we have a valid value first.
-        '''
-        return self.config[section][key].strip('"')
-        
-    def is_enabled(self, key, section = 'Cartridge', default_value = False):
-        '''
-        Check whether a key used to specifiy a boolean value equates to True,
-        the values yes/no as well as true/false can be used as expected.
-        '''
-        if not self.have_setting(key, section):
-            return default_value
-        return self.config.getboolean(section, key)

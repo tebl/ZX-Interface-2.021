@@ -1,18 +1,11 @@
 import os
 import sys
 from argparse import ArgumentParser
-from cartridge_file import CartridgeFile
+from configparser import ConfigParser
+from output_handler import OutputHandler
 from settings import Settings
 
 settings = Settings('cartridge.ini')
-
-def create(name, chip_size, chip_count):
-    '''
-    Creates a blank cartridge with a few of the most common configuration
-    options in it, mainly intended for later editing and customization.
-    '''
-    dir_path = os.path.join('cartridges', name)
-    CartridgeFile.create(dir_path, chip_size, chip_count, settings)
 
 def verify(name):
     '''
@@ -20,9 +13,12 @@ def verify(name):
     name supplied. For the most part it should be able to tell you when
     something's a little bit iffy, but it will crash on you.
     '''
-    dir_path = os.path.join('cartridges', name)
-    file = CartridgeFile(dir_path, settings)
-    file.verify()
+    OutputHandler.get_instance(name, settings).verify()
+    # dir_path = os.path.join('cartridges', name)
+    # instance = get_handler(name, settings)
+    # file = CartridgeFile(dir_path, settings)
+    # instance.verify()
+
 
 def process(name):
     '''
@@ -30,9 +26,10 @@ def process(name):
     file and use the settings added to generate a bin-file suitable for
     flashing onto an (E)EPROM.
     '''
-    dir_path = os.path.join('cartridges', name)
-    file = CartridgeFile(dir_path, settings)
-    file.process()
+    OutputHandler.get_instance(name, settings).process()
+    # dir_path = os.path.join('cartridges', name)
+    # file = CartridgeFile(dir_path, settings)
+    # file.process()
 
 def parse_arguments():
     '''
@@ -48,6 +45,7 @@ def parse_arguments():
     parser.add_argument('-c', '--create', help='Create a new empty cartridge configuration for later customization', nargs='*', default=[])
     parser.add_argument('-cs', '--chip-size', help='Cartridge chip size to use with create', type=chip_size, default=512)
     parser.add_argument('-cc', '--chip-count', help='Cartridge chip count to use with create', type=chip_count, default=1)    
+    parser.add_argument('-t', '--cartridge-type', help='Specify the type of cartridge, either standard or snapshot', default='Standard', choices=['standard', 'snapshot'])
     
     parser.add_argument('-p', '--process', help='Process cartridge configuration', nargs='*', default=[])
     parser.add_argument('-v', '--verify', help='Verify cartridge configuration', nargs='*', default=[])    
@@ -55,33 +53,35 @@ def parse_arguments():
     args = parser.parse_args()
 
     errors = False
-    for dirname in args.create:
-        try:
-            create(dirname, args.chip_size, args.chip_count)
-        except Exception as err:
-            errors = True
-            print("Uncaught exception verifying {0} ({1})".format(dirname, err))
-            break
+    if not errors:
+        for dirname in args.create:
+            # try:
+                OutputHandler.create(dirname, args, settings)
+                print()
+            # except Exception as err:
+                # errors = True
+                # print("Uncaught exception creating {0} ({1})".format(dirname, err))
+                # break
     
     if not errors:
         for dirname in args.verify:
-            try:
-                verify(dirname)
+            # try:
+                OutputHandler.get_instance(dirname, settings).verify()
                 print()
-            except Exception as err:
-                errors = True
-                print("Uncaught exception verifying {0} ({1})".format(dirname, err))
+            # except Exception as err:
+                # errors = True
+                # print("Uncaught exception verifying {0} ({1})".format(dirname, err))
 
     if not errors:
         for dirname in args.process:
-            try:
-                process(dirname)
+            # try:
+                OutputHandler.get_instance(dirname, settings).process()
                 print()
-            except Exception as err:
-                print("Uncaught exception processing {0} ({1})".format(dirname, err))
+            # except Exception as err:
+                # print("Uncaught exception processing {0} ({1})".format(dirname, err))
         
     print("Done.")
-
+    
 def chip_size(string):
     '''
     Converts specified chip size into something that can be used with the
