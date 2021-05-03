@@ -17,9 +17,13 @@
 
 resources/
 software/Testing
+software/knight_lore
 software/cartridge_loader/__debug.bat
 software/cartridge_loader/test.bat
 software/cartridge_loader/ZXSpin
+software/snapshot_loader/__debug.bat
+software/snapshot_loader/test.bat
+software/snapshot_loader/ZXSpin
 software/cartridge_creator/*.bin
 software/cartridge_creator/*.hex
 software/cartridge_creator/cartridges/*

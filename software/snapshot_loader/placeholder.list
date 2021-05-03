@@ -1,0 +1,118 @@
+6000-                  4                       .OR             $6000
+6000-                  5
+6000-                  6                       .IN             constants.asm   ; Constants
+4000-            I     1       SCREEN                  .EQU    $4000                   ; 16384
+1800-            I     2       SZ_SCRN                 .EQU    $1800                   ; 6144  256*192 pixels, 8-pixels per byte
+5800-            I     3       ATTR                    .EQU    $5800                   ; 22528
+0300-            I     4       SZ_ATTR                 .EQU    $300                    ; 768   32*24 8-pixel blocks
+0060-            I     5       SZ_FONT                 .EQU    $60                             ; 96
+5CC0-            I     6       VARS                    .EQU    $5CC0                   ; 23744, used as start of variable space
+5F00-            I     7       STACK                   .EQU    $5F00                   ; Stack decrement down from here
+0400-            I     8       SIGNATURE               .EQU    $0400                   ; Software signature, used when checking banks.
+6000-            I     9
+001F-            I    10       CTRL_BANK               .EQU    31                              ; Bank register for ZX Interface 2.021
+003F-            I    11       CTRL_LED                .EQU    63                              ; LED for ZX Diagnostic 2.021 cartridge
+00FE-            I    12       CTRL_BORDER             .EQU    254                             ; Controls the screen border
+6000-            I    13
+6000-            I    14       ; Keyboard row definitions
+6000-            I    15       ;                                        Bit     0   1 2 3 4
+FEFE-            I    16       KR_SH_ZXCV              .EQU    $FEFE                   ;    SHIFT   Z X C V
+FBFE-            I    17       KR_QWERT                .EQU    $FBFE                   ;        Q   W E R T
+FDFE-            I    18       KR_ASDFG                .EQU    $FDFE                   ;        A   S D F G
+F7FE-            I    19       KR_12345                .EQU    $F7FE                   ;        1   2 3 4 5
+EFFE-            I    20       KR_09876                .EQU    $EFFE                   ;        0   9 8 7 6
+DFFE-            I    21       KR_POIUY                .EQU    $DFFE                   ;        P   O I U Y
+BFFE-            I    22       KR_EN_LKJH              .EQU    $BFFE                   ;    ENTER   L K J H
+7FFE-            I    23       KR_SP_SY_MNB    .EQU    $7FFE                   ;    SPACE SYM M N B
+6000-                  7                       .IN             attributes.asm  ; Attribute definitions
+0000-            I     1       A_BLACK         .EQU    %00000000
+0001-            I     2       A_BLUE          .EQU    %00000001
+0002-            I     3       A_RED           .EQU    %00000010
+0003-            I     4       A_MAGENTA       .EQU    %00000011
+0004-            I     5       A_GREEN         .EQU    %00000100
+0005-            I     6       A_CYAN          .EQU    %00000101
+0006-            I     7       A_YELLOW        .EQU    %00000110
+0007-            I     8       A_WHITE         .EQU    %00000111
+6000-            I     9
+0000-            I    10       A_P_BLACK       .EQU    A_BLACK<<3
+0008-            I    11       A_P_BLUE        .EQU    A_BLUE<<3
+0010-            I    12       A_P_RED         .EQU    A_RED<<3
+0018-            I    13       A_P_MAGENTA     .EQU    A_MAGENTA<<3
+0020-            I    14       A_P_GREEN       .EQU    A_GREEN<<3
+0028-            I    15       A_P_CYAN        .EQU    A_CYAN<<3
+0030-            I    16       A_P_YELLOW      .EQU    A_YELLOW<<3
+0038-            I    17       A_P_WHITE       .EQU    A_WHITE<<3
+6000-            I    18
+0040-            I    19       A_BRIGHT        .EQU    %01000000
+0080-            I    20       A_FLASH         .EQU    %10000000
+6000-                  8
+6000-F3                9 (  4) MAIN:   DI
+6001-31 00 5F         10 ( 10)                 LD              SP,$5F00
+6004-3E 01            11 (  7)                 LD              A,A_BLUE
+6006-D3 FE            12 ( 11) .NEXT:  OUT             (CTRL_BORDER),A
+6008-CD 17 60         13 ( 17)                 CALL    DELAY
+600B-3C               14 (  4)                 INC             A
+600C-FE 07            15 (  7)                 CP              A_WHITE
+600E-30 02            16 ( 7+)                 JR              NC,.RESET
+6010-18 F4            17 ( 12)                 JR              .NEXT
+6012-3E 00            18 (  7) .RESET: LD              A,A_BLACK
+6014-C3 00 60         19 ( 10)                 JP              MAIN
+6017-                 20
+6017-                 21       LIB_DELAY:
+6017-                 22                       .IN             lib_delay.asm
+6017-            I     1       ;
+6017-            I     2       ; Performs a simple 16-bit delay loop. I've got no idea of the actual timings,
+6017-            I     3       ; but it feels like a little over a second.
+6017-            I     4       ;
+6017-C5          I     5 ( 11) DELAY:  PUSH    BC
+6018-D5          I     6 ( 11)                 PUSH    DE
+6019-01 00 04    I     7 ( 10)                 LD              BC,$0400
+601C-11 00 01    I     8 ( 10)                 LD              DE,$0100
+601F-CD 33 60    I     9 ( 17)                 CALL    CUSTOM_DELAY
+6022-D1          I    10 ( 10)                 POP             DE
+6023-C1          I    11 ( 10)                 POP             BC
+6024-C9          I    12 ( 10)                 RET
+6025-            I    13
+6025-            I    14       KEY_DELAY:
+6025-C5          I    15 ( 11)                 PUSH    BC
+6026-D5          I    16 ( 11)                 PUSH    DE
+6027-01 55 00    I    17 ( 10)                 LD              BC,$0055
+602A-11 55 00    I    18 ( 10)                 LD              DE,$0055
+602D-CD 33 60    I    19 ( 17)                 CALL    CUSTOM_DELAY
+6030-D1          I    20 ( 10)                 POP             DE
+6031-C1          I    21 ( 10)                 POP             BC
+6032-C9          I    22 ( 10)                 RET
+6033-            I    23
+6033-            I    24
+6033-            I    25       ;
+6033-            I    26       ; Custom delay routine, uses just about anything to burn as many cycles as
+6033-            I    27       ; possible. Load BC for an outer loop count, DE for an inner loop to control
+6033-            I    28       ; how much time this routine uses. For the exact timings, someone'd need to
+6033-            I    29       ; count the cycles and divide it by CPU frequency.
+6033-            I    30       ;
+6033-            I    31       CUSTOM_DELAY:
+6033-C5          I    32 ( 11)                 PUSH    BC                              ; Save current registers, mainly because we
+6034-D5          I    33 ( 11)                 PUSH    DE                              ; overwrite just about anything and we need
+6035-F5          I    34 ( 11)                 PUSH    AF                              ; the calling routines to stay working.
+6036-E5          I    35 ( 11)                 PUSH    HL
+6037-7A          I    36 (  4)                 LD              A,D                             ; Let's save the starting value of DE - there's
+6038-67          I    37 (  4)                 LD              H,A                             ; probably an easier way, but that requires
+6039-7B          I    38 (  4)                 LD              A,E                             ; reading.
+603A-6F          I    39 (  4)                 LD              L,A
+603B-7C          I    40 (  4) .OUTER: LD              A,H                             ; Restore initial DE value
+603C-57          I    41 (  4)                 LD              D,A
+603D-7D          I    42 (  4)                 LD              A,L
+603E-5F          I    43 (  4)                 LD              E,A
+603F-1B          I    44 (  6) .INNER: DEC             DE
+6040-7A          I    45 (  4)                 LD              A,D                             ; Decrementing DE does not set Z-flag, so we'll
+6041-B3          I    46 (  4)                 OR              E                               ;  need to do do this. It's a quirk.
+6042-C2 3F 60    I    47 ( 10)                 JP              NZ,.INNER               ; If DE not 0, then do inner loop again.
+6045-0B          I    48 (  6)                 DEC             BC                              ; Z-flag. Again.
+6046-78          I    49 (  4)                 LD              A,B
+6047-B1          I    50 (  4)                 OR              C
+6048-C2 3B 60    I    51 ( 10)                 JP              NZ,.OUTER               ; If BE not 0, then do outer loop again.
+604B-E1          I    52 ( 10)                 POP             HL                              ; Restore registers that were overwritten.
+604C-F1          I    53 ( 10)                 POP             AF
+604D-D1          I    54 ( 10)                 POP             DE
+604E-C1          I    55 ( 10)                 POP             BC
+604F-C9          I    56 ( 10)                 RET
