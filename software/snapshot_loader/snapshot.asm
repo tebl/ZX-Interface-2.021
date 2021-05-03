@@ -129,16 +129,18 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 .COPY:	PUSH	HL				; Push the HL as LAST_STAND address for later.
 
 		;
-		; Generating LAST STAND ROUTINE from scratch
+		; Generating LAST STAND ROUTINE from scratch, adding them byte for byte
+		; to RAM until we're satisfied. To keep the mental mapping at a minimum
+		; we'll use $00 (NOP) to avoid different lengths.
 		;
 		LD		A,$21			; LD HL,(H_HL)
-		>W_BYTE
+		>W_BYTE					; Use macro to store in memory and increment.
 		LD		A,(H_HL)
 		>W_BYTE
 		LD		A,(H_HL+1)
 		>W_BYTE
 		
-.BANK_OUT:
+.BANK_OUT:						; Bank out cartridge, enabling standard ROM.
 		LD		A,$3E			; LD A,%00100000
 		>W_BYTE
 		LD		A,$20
@@ -150,7 +152,7 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 		LD		A,$F1			; POP AF
 		>W_BYTE
 		
-.SET_INTERRUPT_MODE:
+.SET_INTERRUPT_MODE:			; Set interrupt mode
 		LD		A,$ED			; Interrupt mode is set using two bytes, the
 		>W_BYTE					;  first one is always $ED.
 		LD		A,(H_INTM)		; Compare interrupt mode,
@@ -170,7 +172,7 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 		>W_BYTE
 .IM_DONE:
 
-.SET_INTERRUPT:
+.SET_INTERRUPT:					; Set whether the interrupt is enabled.
 		LD		A,(H_INT)		; Check if Interrupt bit
 		CP		$00				;  is 0, meaning not enabled.
 		JR		NZ,.INT_EI		; Jump ahead if not.
@@ -182,15 +184,17 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 		>W_BYTE
 .INT_DONE:
 
-.RETN:	LD		A,$ED			; RETN
+.RETN:							; This resumes the program as from interrupt.
+		LD		A,$ED			; RETN
 		>W_BYTE
 		LD		A,$45
 		>W_BYTE
 		
 		;
 		; Restore all of the registers that we can deal with at the moment,
-		; we'll at a minimum need to restore HL and AF as part of the last
-		; stand routines above.
+		; but sincle we'll need at least some registers to work with - AF
+		; will be pushed onto stack while the last stand routines will restore
+		; HL when that is finally run.
 		; 
 		LD		A,(H_I)			; Load interrupt page into A
 		LD		I,A				;  and use it to set the page.
@@ -220,8 +224,9 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 		JP		(HL)			; Jump to last stand copy in RAM
 
 ;
-; This is for the most part included as a template, meaning that most of the
-; actual instructions will have been generated instead.
+; This is for the most part included so that I have something to compare the
+; generated LAST_STAND routines against. Not actually called or referenced at
+; any point in the program.
 ;
 		.NO		$0F00
 LAST_STAND:
@@ -240,10 +245,11 @@ LAST_STAND:
 ;
 ; Snapshot header information to be duplicated into every slot, the values
 ; here are just placeholders without any significance (to be replaced later).
+; Fields are loaded as LO/HI-byte using standard 16-bit LD directives.
 ;
 		.NO		$0FE3
 LOADER_ADR:
-		.DB		$00, $00
+		.DB		$00,$00
 		.NO		$0FE5
 HEADER:
 H_I:	.DB		$00

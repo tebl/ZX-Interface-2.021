@@ -82,18 +82,18 @@ class Bin2Hex:
         self.output_file.write('\n')
         
     def generate_record(self, address, record_type, data = []):
-        adress_hi = (address & 0xFF00) >> 8
-        adress_lo = address & 0x00FF
+        address_hi = (address & 0xFF00) >> 8
+        address_lo = address & 0x00FF
         return ''.join(
             [
                 ':',
                 self.format_hex8(len(data)),
-                self.format_hex8(adress_hi),
-                self.format_hex8(adress_lo),
+                self.format_hex8(address_hi),
+                self.format_hex8(address_lo),
                 self.format_hex8(record_type)
             ]
             + list(map(self.format_hex8, data))
-            + [self.format_hex8(self.intel_checksum(data, adress_hi, adress_lo, record_type))]
+            + [self.format_hex8(self.intel_checksum(data, address_hi, address_lo, record_type))]
         )
         
     def format_hex8(self, data):
@@ -102,7 +102,7 @@ class Bin2Hex:
     def format_hex16(self, data):
         return format(data, '04X')
 
-    def intel_checksum(self, data, adress_hi, adress_lo, record_type):
+    def intel_checksum(self, data, address_hi, address_lo, record_type):
         '''
         Generates an Intel HEX checksum value, essentially it sums all of the
         byte-pairs in the record before calculating 2s complement. It's maths,
@@ -110,8 +110,8 @@ class Bin2Hex:
         '''
         x = sum([
             len(data),
-            adress_hi,
-            adress_lo,
+            address_hi,
+            address_lo,
             record_type,
             sum(data)
         ])

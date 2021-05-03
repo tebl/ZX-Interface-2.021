@@ -2,7 +2,6 @@ import os
 from configparser import ConfigParser
 from constants import *
 from output_handler import OutputHandler
-# from bin2hex import Bin2Hex
 from functions import *
 
 class SnapshotFile(OutputHandler):
@@ -69,7 +68,8 @@ class SnapshotFile(OutputHandler):
 
                     print_result(f"Create <BANK {bank_id}>", f"{format_number(base_address, format='address')} - {format_number(base_address + 0x3FFF, format='address')}", '...', indent_count=2)
                     with open(self.get_input_path(), 'rb') as input_file:
-                        self.file_fast_forward(base_address + 0x0FE5, input_file, output_file, indent_count=3)
+                        self.file_fast_forward(base_address + 0x0FE3, input_file, output_file, indent_count=3)
+                        self.file_write_loader_address(output_file)
                         self.file_write_segment('Header data', self.header, output_file)
                         self.file_write_segment('Snapshot RAM', snapshot.read(0x3000), output_file)
                     print_result(f"Create <BANK {bank_id}>", f"{format_number(self.bytes_written - base_address, format='human')} written", 'END', indent_count=2)
@@ -87,6 +87,38 @@ class SnapshotFile(OutputHandler):
         '''
         num_bytes = self.file_write_byte(data, output_file)
         print_result(name, f"{format_number(num_bytes, format='human')} written", 'OK', indent_count)
+
+
+    def file_write_loader_address(self, output_file, indent_count=3):
+        data = self.get_loader_address()
+        num_bytes = self.file_write_byte(data, output_file)
+        data = list(map(format_hex8, data))
+        print_result('Loader Address', ', '.join(data), 'OK', indent_count)
+    
+
+    def get_loader_address(self):
+        '''
+        Ideally we'd like to add some logic here in order to locate space for
+        a 13-byte routine in RAM. The routine is used to perform the last steps
+        in resuming such as banking out the cartridge and setting the final
+        registers. A value of 0,0 just leaves this up to the snapshot_loader
+        code running on the Z80, it's try to write the routine below the current
+        stack value - in this case we'll need 17 bytes as we need to leave at
+        least 4 bytes for stack usage.
+        '''
+        address = 0
+        if self.have_setting('LoaderAddress'):
+            address = int(self.setting('LoaderAddress'), 16)
+        
+        address_hi = (address & 0xFF00) >> 8
+        address_lo = address & 0x00FF
+
+        return bytes(
+            [
+                address_lo,
+                address_hi
+            ]
+        )
 
 
     def verify(self):

@@ -169,172 +169,178 @@ D000-                 11       TARGET3 .EQU    $D000                   ; Bank 3
 0156-E5              129 ( 11) .COPY:  PUSH    HL                              ; Push the HL as LAST_STAND address for later.
 0157-                130
 0157-                131                       ;
-0157-                132                       ; Generating LAST STAND ROUTINE from scratch
-0157-                133                       ;
-0157-3E 21           134 (  7)                 LD              A,$21                   ; LD HL,(H_HL)
-0159-                135                       >W_BYTE
+0157-                132                       ; Generating LAST STAND ROUTINE from scratch, adding them byte for byte
+0157-                133                       ; to RAM until we're satisfied. To keep the mental mapping at a minimum
+0157-                134                       ; we'll use $00 (NOP) to avoid different lengths.
+0157-                135                       ;
+0157-3E 21           136 (  7)                 LD              A,$21                   ; LD HL,(H_HL)
+0159-                137                       >W_BYTE                                 ; Use macro to store in memory and increment.
 0159-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 015A-23           M    2 (  6)                 INC             HL                              ;  target position.
-015B-3A EE 0F        136 ( 13)                 LD              A,(H_HL)
-015E-                137                       >W_BYTE
+015B-3A EE 0F        138 ( 13)                 LD              A,(H_HL)
+015E-                139                       >W_BYTE
 015E-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 015F-23           M    2 (  6)                 INC             HL                              ;  target position.
-0160-3A EF 0F        138 ( 13)                 LD              A,(H_HL+1)
-0163-                139                       >W_BYTE
+0160-3A EF 0F        140 ( 13)                 LD              A,(H_HL+1)
+0163-                141                       >W_BYTE
 0163-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0164-23           M    2 (  6)                 INC             HL                              ;  target position.
-0165-                140
-0165-                141       .BANK_OUT:
-0165-3E 3E           142 (  7)                 LD              A,$3E                   ; LD A,%00100000
-0167-                143                       >W_BYTE
+0165-                142
+0165-                143       .BANK_OUT:                                              ; Bank out cartridge, enabling standard ROM.
+0165-3E 3E           144 (  7)                 LD              A,$3E                   ; LD A,%00100000
+0167-                145                       >W_BYTE
 0167-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0168-23           M    2 (  6)                 INC             HL                              ;  target position.
-0169-3E 20           144 (  7)                 LD              A,$20
-016B-                145                       >W_BYTE
+0169-3E 20           146 (  7)                 LD              A,$20
+016B-                147                       >W_BYTE
 016B-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 016C-23           M    2 (  6)                 INC             HL                              ;  target position.
-016D-3E D3           146 (  7)                 LD              A,$D3                   ; OUT(CTRL_BANK),A
-016F-                147                       >W_BYTE
+016D-3E D3           148 (  7)                 LD              A,$D3                   ; OUT(CTRL_BANK),A
+016F-                149                       >W_BYTE
 016F-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0170-23           M    2 (  6)                 INC             HL                              ;  target position.
-0171-3E 1F           148 (  7)                 LD              A,$1F
-0173-                149                       >W_BYTE
+0171-3E 1F           150 (  7)                 LD              A,$1F
+0173-                151                       >W_BYTE
 0173-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0174-23           M    2 (  6)                 INC             HL                              ;  target position.
-0175-3E F1           150 (  7)                 LD              A,$F1                   ; POP AF
-0177-                151                       >W_BYTE
+0175-3E F1           152 (  7)                 LD              A,$F1                   ; POP AF
+0177-                153                       >W_BYTE
 0177-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0178-23           M    2 (  6)                 INC             HL                              ;  target position.
-0179-                152
-0179-                153       .SET_INTERRUPT_MODE:
-0179-3E ED           154 (  7)                 LD              A,$ED                   ; Interrupt mode is set using two bytes, the
-017B-                155                       >W_BYTE                                 ;  first one is always $ED.
+0179-                154
+0179-                155       .SET_INTERRUPT_MODE:                    ; Set interrupt mode
+0179-3E ED           156 (  7)                 LD              A,$ED                   ; Interrupt mode is set using two bytes, the
+017B-                157                       >W_BYTE                                 ;  first one is always $ED.
 017B-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 017C-23           M    2 (  6)                 INC             HL                              ;  target position.
-017D-3A FE 0F        156 ( 13)                 LD              A,(H_INTM)              ; Compare interrupt mode,
-0180-FE 00           157 (  7)                 CP              $00                             ;  does it match 0?
-0182-20 06           158 ( 7+)                 JR              NZ,.CHK_IM1             ; No, check IM1 instead.
-0184-3E 46           159 (  7)                 LD              A,$46                   ; Yes, set IM0
-0186-                160                       >W_BYTE
+017D-3A FE 0F        158 ( 13)                 LD              A,(H_INTM)              ; Compare interrupt mode,
+0180-FE 00           159 (  7)                 CP              $00                             ;  does it match 0?
+0182-20 06           160 ( 7+)                 JR              NZ,.CHK_IM1             ; No, check IM1 instead.
+0184-3E 46           161 (  7)                 LD              A,$46                   ; Yes, set IM0
+0186-                162                       >W_BYTE
 0186-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0187-23           M    2 (  6)                 INC             HL                              ;  target position.
-0188-18 0E           161 ( 12)                 JR              .IM_DONE
-018A-                162       .CHK_IM1:
-018A-FE 01           163 (  7)                 CP              $01                             ; Matches interrupt mode 1?
-018C-20 06           164 ( 7+)                 JR              NZ,.CHK_IM2             ; No, check IM2 instead.
-018E-3E 56           165 (  7)                 LD              A,$56                   ; Yes, set IM1
-0190-                166                       >W_BYTE
+0188-18 0E           163 ( 12)                 JR              .IM_DONE
+018A-                164       .CHK_IM1:
+018A-FE 01           165 (  7)                 CP              $01                             ; Matches interrupt mode 1?
+018C-20 06           166 ( 7+)                 JR              NZ,.CHK_IM2             ; No, check IM2 instead.
+018E-3E 56           167 (  7)                 LD              A,$56                   ; Yes, set IM1
+0190-                168                       >W_BYTE
 0190-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0191-23           M    2 (  6)                 INC             HL                              ;  target position.
-0192-18 04           167 ( 12)                 JR              .IM_DONE
-0194-                168       .CHK_IM2:
-0194-3E 5E           169 (  7)                 LD              A,$5E                   ; Only one left, so we set IM2
-0196-                170                       >W_BYTE
+0192-18 04           169 ( 12)                 JR              .IM_DONE
+0194-                170       .CHK_IM2:
+0194-3E 5E           171 (  7)                 LD              A,$5E                   ; Only one left, so we set IM2
+0196-                172                       >W_BYTE
 0196-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 0197-23           M    2 (  6)                 INC             HL                              ;  target position.
-0198-                171       .IM_DONE:
-0198-                172
-0198-                173       .SET_INTERRUPT:
-0198-3A F8 0F        174 ( 13)                 LD              A,(H_INT)               ; Check if Interrupt bit
-019B-FE 00           175 (  7)                 CP              $00                             ;  is 0, meaning not enabled.
-019D-20 06           176 ( 7+)                 JR              NZ,.INT_EI              ; Jump ahead if not.
-019F-3E 00           177 (  7)                 LD              A,$00                   ; We just do a NOP as not enabled from start.
-01A1-                178                       >W_BYTE
+0198-                173       .IM_DONE:
+0198-                174
+0198-                175       .SET_INTERRUPT:                                 ; Set whether the interrupt is enabled.
+0198-3A F8 0F        176 ( 13)                 LD              A,(H_INT)               ; Check if Interrupt bit
+019B-FE 00           177 (  7)                 CP              $00                             ;  is 0, meaning not enabled.
+019D-20 06           178 ( 7+)                 JR              NZ,.INT_EI              ; Jump ahead if not.
+019F-3E 00           179 (  7)                 LD              A,$00                   ; We just do a NOP as not enabled from start.
+01A1-                180                       >W_BYTE
 01A1-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 01A2-23           M    2 (  6)                 INC             HL                              ;  target position.
-01A3-18 04           179 ( 12)                 JR              .INT_DONE
-01A5-                180       .INT_EI:
-01A5-3E FB           181 (  7)                 LD              A,$FB                   ; Enable maskable interrupts (EI)
-01A7-                182                       >W_BYTE
+01A3-18 04           181 ( 12)                 JR              .INT_DONE
+01A5-                182       .INT_EI:
+01A5-3E FB           183 (  7)                 LD              A,$FB                   ; Enable maskable interrupts (EI)
+01A7-                184                       >W_BYTE
 01A7-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 01A8-23           M    2 (  6)                 INC             HL                              ;  target position.
-01A9-                183       .INT_DONE:
-01A9-                184
-01A9-3E ED           185 (  7) .RETN:  LD              A,$ED                   ; RETN
-01AB-                186                       >W_BYTE
+01A9-                185       .INT_DONE:
+01A9-                186
+01A9-                187       .RETN:                                                  ; This resumes the program as from interrupt.
+01A9-3E ED           188 (  7)                 LD              A,$ED                   ; RETN
+01AB-                189                       >W_BYTE
 01AB-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 01AC-23           M    2 (  6)                 INC             HL                              ;  target position.
-01AD-3E 45           187 (  7)                 LD              A,$45
-01AF-                188                       >W_BYTE
+01AD-3E 45           190 (  7)                 LD              A,$45
+01AF-                191                       >W_BYTE
 01AF-77           M    1 (  7)                 LD              (HL),A                  ; Store A in address at HL, then
 01B0-23           M    2 (  6)                 INC             HL                              ;  target position.
-01B1-                189
-01B1-                190                       ;
-01B1-                191                       ; Restore all of the registers that we can deal with at the moment,
-01B1-                192                       ; we'll at a minimum need to restore HL and AF as part of the last
-01B1-                193                       ; stand routines above.
-01B1-                194                       ;
-01B1-3A E5 0F        195 ( 13)                 LD              A,(H_I)                 ; Load interrupt page into A
-01B4-ED 47           196 (  9)                 LD              I,A                             ;  and use it to set the page.
-01B6-                197
-01B6-D9              198 (  4)                 EXX                                             ; Restore shadow registers
-01B7-2A EC 0F        199 ( 16)                 LD              HL,(H_A_AF)             ; Load AF to HL and
-01BA-E5              200 ( 11)                 PUSH    HL                              ;  push onto stack
-01BB-F1              201 ( 10)                 POP             AF                              ;  the retrieve it to AF'.
-01BC-2A E6 0F        202 ( 16)                 LD              HL,(H_A_HL)             ; Restore HL'
-01BF-ED 5B E8 0F     203 ( 20)                 LD              DE,(H_A_DE)             ; Restore DE'
-01C3-ED 4B EA 0F     204 ( 20)                 LD              BC,(H_A_BC)             ; Restore BC'
-01C7-D9              205 (  4)                 EXX                                             ; Switch back to primary registers.
-01C8-                206
-01C8-ED 5B F0 0F     207 ( 20)                 LD              DE,(H_DE)               ; DE
-01CC-ED 4B F2 0F     208 ( 20)                 LD              BC,(H_BC)               ; BC
-01D0-FD 2A F4 0F     209 ( 20)                 LD              IY,(H_IY)               ; IY
-01D4-DD 2A F6 0F     210 ( 20)                 LD              IX,(H_IX)               ; IX
-01D8-                211                                                                       ; Interrupt needs to be set in last stand.
-01D8-3A FF 0F        212 ( 13)                 LD              A,(H_BOR)               ; Set the border colour by
-01DB-D3 FE           213 ( 11)                 OUT             (CTRL_BORDER),A ;  writing it to the port.
-01DD-2A FA 0F        214 ( 16)                 LD              HL,(H_AF)               ; AF register can only be set via the
-01E0-E5              215 ( 11)                 PUSH    HL                              ;  stack so we push the HL register
-01E1-F1              216 ( 10)                 POP             AF                              ;  to stack and then pop it back.
-01E2-                217
-01E2-E1              218 ( 10)                 POP             HL                              ; Get back the start of last stand routine
-01E3-F5              219 ( 11)                 PUSH    AF                              ; Push AF to stack for later.
-01E4-E9              220 (  4)                 JP              (HL)                    ; Jump to last stand copy in RAM
-01E5-                221
-01E5-                222       ;
-01E5-                223       ; This is for the most part included as a template, meaning that most of the
-01E5-                224       ; actual instructions will have been generated instead.
-01E5-                225       ;
-0F00                226                       .NO             $0F00
-0F00-                227       LAST_STAND:
-0F00-21 00 01        228 ( 10)                 LD              HL,$0100                ; We can't use any of the registers, so this
-0F03-                229                                                                       ;  will have to be substituted in some other way.
-0F03-3E 20           230 (  7)                 LD              A,%00100000             ; Map out the cartridge ROM to enable ZX Basic
-0F05-D3 1F           231 ( 11)                 OUT             (CTRL_BANK),A
-0F07-F1              232 ( 10)                 POP             AF
-0F08-ED 46           233 (  8)                 IM              0                               ; IM0 ($ED46), depending on H_INTM.
-0F0A-ED 56           234 (  8)                 IM              1                               ; IM1 ($ED56), depending on H_INTM.
-0F0C-ED 5E           235 (  8)                 IM              2                               ; IM2 ($ED5e), depending on H_INTM.
-0F0E-FB              236 (  4)                 EI                                              ; EI ($FB), replace with NOP if H_INT is Zero
-0F0F-00              237 (  4)                 NOP
-0F10-ED 45           238 ( 14)                 RETN
-0F12-                239
-0F12-                240       ;
-0F12-                241       ; Snapshot header information to be duplicated into every slot, the values
-0F12-                242       ; here are just placeholders without any significance (to be replaced later).
-0F12-                243       ;
-0FE3                244                       .NO             $0FE3
-0FE3-                245       LOADER_ADR:
-0FE3-00 00           246                       .DB             $00, $00
-0FE5-                247                       .NO             $0FE5
-0FE5-                248       HEADER:
-0FE5-00              249       H_I:    .DB             $00
-0FE6-01 02           250       H_A_HL: .DB             $01,$02
-0FE8-03 04           251       H_A_DE: .DB             $03,$04
-0FEA-05 06           252       H_A_BC: .DB             $05,$06
-0FEC-00 00           253       H_A_AF: .DB             $00,$00
-0FEE-00 01           254       H_HL:   .DB             $00,$01
-0FF0-AF 00           255       H_DE:   .DB             $AF,$00
-0FF2-BA 02           256       H_BC:   .DB             $BA,$02
-0FF4-00 00           257       H_IY:   .DB             $00,$00
-0FF6-00 00           258       H_IX:   .DB             $00,$00
-0FF8-00              259       H_INT:  .DB             $00
-0FF9-34              260       H_R:    .DB             $34
-0FFA-AC AF           261       H_AF:   .DB             $AC,$AF
-0FFC-EE 5E           262       H_SP:   .DB             $EE,$5E
-0FFE-00              263       H_INTM: .DB             $00
-0FFF-03              264       H_BOR:  .DB             $03
-1000-                265
-1000-                266                       .NO             $1000
-1000-                267       PAYLOAD:
-1000-                268                       .BI             placeholder_ram.bin
+01B1-                192
+01B1-                193                       ;
+01B1-                194                       ; Restore all of the registers that we can deal with at the moment,
+01B1-                195                       ; but sincle we'll need at least some registers to work with - AF
+01B1-                196                       ; will be pushed onto stack while the last stand routines will restore
+01B1-                197                       ; HL when that is finally run.
+01B1-                198                       ;
+01B1-3A E5 0F        199 ( 13)                 LD              A,(H_I)                 ; Load interrupt page into A
+01B4-ED 47           200 (  9)                 LD              I,A                             ;  and use it to set the page.
+01B6-                201
+01B6-D9              202 (  4)                 EXX                                             ; Restore shadow registers
+01B7-2A EC 0F        203 ( 16)                 LD              HL,(H_A_AF)             ; Load AF to HL and
+01BA-E5              204 ( 11)                 PUSH    HL                              ;  push onto stack
+01BB-F1              205 ( 10)                 POP             AF                              ;  the retrieve it to AF'.
+01BC-2A E6 0F        206 ( 16)                 LD              HL,(H_A_HL)             ; Restore HL'
+01BF-ED 5B E8 0F     207 ( 20)                 LD              DE,(H_A_DE)             ; Restore DE'
+01C3-ED 4B EA 0F     208 ( 20)                 LD              BC,(H_A_BC)             ; Restore BC'
+01C7-D9              209 (  4)                 EXX                                             ; Switch back to primary registers.
+01C8-                210
+01C8-ED 5B F0 0F     211 ( 20)                 LD              DE,(H_DE)               ; DE
+01CC-ED 4B F2 0F     212 ( 20)                 LD              BC,(H_BC)               ; BC
+01D0-FD 2A F4 0F     213 ( 20)                 LD              IY,(H_IY)               ; IY
+01D4-DD 2A F6 0F     214 ( 20)                 LD              IX,(H_IX)               ; IX
+01D8-                215                                                                       ; Interrupt needs to be set in last stand.
+01D8-3A FF 0F        216 ( 13)                 LD              A,(H_BOR)               ; Set the border colour by
+01DB-D3 FE           217 ( 11)                 OUT             (CTRL_BORDER),A ;  writing it to the port.
+01DD-2A FA 0F        218 ( 16)                 LD              HL,(H_AF)               ; AF register can only be set via the
+01E0-E5              219 ( 11)                 PUSH    HL                              ;  stack so we push the HL register
+01E1-F1              220 ( 10)                 POP             AF                              ;  to stack and then pop it back.
+01E2-                221
+01E2-E1              222 ( 10)                 POP             HL                              ; Get back the start of last stand routine
+01E3-F5              223 ( 11)                 PUSH    AF                              ; Push AF to stack for later.
+01E4-E9              224 (  4)                 JP              (HL)                    ; Jump to last stand copy in RAM
+01E5-                225
+01E5-                226       ;
+01E5-                227       ; This is for the most part included so that I have something to compare the
+01E5-                228       ; generated LAST_STAND routines against. Not actually called or referenced at
+01E5-                229       ; any point in the program.
+01E5-                230       ;
+0F00                231                       .NO             $0F00
+0F00-                232       LAST_STAND:
+0F00-21 00 01        233 ( 10)                 LD              HL,$0100                ; We can't use any of the registers, so this
+0F03-                234                                                                       ;  will have to be substituted in some other way.
+0F03-3E 20           235 (  7)                 LD              A,%00100000             ; Map out the cartridge ROM to enable ZX Basic
+0F05-D3 1F           236 ( 11)                 OUT             (CTRL_BANK),A
+0F07-F1              237 ( 10)                 POP             AF
+0F08-ED 46           238 (  8)                 IM              0                               ; IM0 ($ED46), depending on H_INTM.
+0F0A-ED 56           239 (  8)                 IM              1                               ; IM1 ($ED56), depending on H_INTM.
+0F0C-ED 5E           240 (  8)                 IM              2                               ; IM2 ($ED5e), depending on H_INTM.
+0F0E-FB              241 (  4)                 EI                                              ; EI ($FB), replace with NOP if H_INT is Zero
+0F0F-00              242 (  4)                 NOP
+0F10-ED 45           243 ( 14)                 RETN
+0F12-                244
+0F12-                245       ;
+0F12-                246       ; Snapshot header information to be duplicated into every slot, the values
+0F12-                247       ; here are just placeholders without any significance (to be replaced later).
+0F12-                248       ; Fields are loaded as LO/HI-byte using standard 16-bit LD directives.
+0F12-                249       ;
+0FE3                250                       .NO             $0FE3
+0FE3-                251       LOADER_ADR:
+0FE3-00 00           252                       .DB             $00,$00
+0FE5-                253                       .NO             $0FE5
+0FE5-                254       HEADER:
+0FE5-00              255       H_I:    .DB             $00
+0FE6-01 02           256       H_A_HL: .DB             $01,$02
+0FE8-03 04           257       H_A_DE: .DB             $03,$04
+0FEA-05 06           258       H_A_BC: .DB             $05,$06
+0FEC-00 00           259       H_A_AF: .DB             $00,$00
+0FEE-00 01           260       H_HL:   .DB             $00,$01
+0FF0-AF 00           261       H_DE:   .DB             $AF,$00
+0FF2-BA 02           262       H_BC:   .DB             $BA,$02
+0FF4-00 00           263       H_IY:   .DB             $00,$00
+0FF6-00 00           264       H_IX:   .DB             $00,$00
+0FF8-00              265       H_INT:  .DB             $00
+0FF9-34              266       H_R:    .DB             $34
+0FFA-AC AF           267       H_AF:   .DB             $AC,$AF
+0FFC-EE 5E           268       H_SP:   .DB             $EE,$5E
+0FFE-00              269       H_INTM: .DB             $00
+0FFF-03              270       H_BOR:  .DB             $03
+1000-                271
+1000-                272                       .NO             $1000
+1000-                273       PAYLOAD:
+1000-                274                       .BI             placeholder_ram.bin
