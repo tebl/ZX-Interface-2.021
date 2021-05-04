@@ -44,8 +44,14 @@ class SnapshotFile(OutputHandler):
         config.set('Cartridge', 'Type', 'Snapshot')
         config.set('Cartridge', ';BasePath=..\\..\\')
         config.set('Cartridge', 'BaseName', 'cartridge')
-        config.set('Cartridge', 'FileName', 'loader.sna')
+        config.set('Cartridge', 'FileName', 'blank.sna')
         config.set('Cartridge', ';LoaderAddress = 0xFFF0')
+
+        blank_path = os.path.join(dir_path, 'blank.sna')
+        with open(program_settings.blank_snapshot, 'rb') as input_file:
+            with open(blank_path, 'wb') as blank_file:
+                blank_file.write(input_file.read())
+        print_result('Placeholder SNA', blank_path, 'OK')
 
         definition = os.path.join(dir_path, '_cartridge.ini')
         with open(definition, 'w') as config_file:
@@ -56,14 +62,15 @@ class SnapshotFile(OutputHandler):
     def process(self):
         print(f"Processing data for '{self.dir_path}':")
         target_file = self.get_target_file('bin')
+        source_file = self.get_source_file('FileName')
         print_result('(E)EPROM image', target_file, '...')
         self.bytes_written = 0
 
         with open(target_file, 'wb') as output_file:
-            with open(self.get_source_file('FileName'), 'rb') as snapshot:
+            with open(source_file, 'rb') as snapshot:
                 self.header = snapshot.read(27)
                 self.update_all_fields()
-                print_result('Header', '', '', indent_count=2)
+                print_result('FileName', source_file, 'OK', indent_count=2)
                 self.print_header(indent_count=3)
                 for bank_id in range(0,4):
                     base_address = 0x4000 * bank_id

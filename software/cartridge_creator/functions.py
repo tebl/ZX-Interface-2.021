@@ -93,10 +93,9 @@ def print_result(description, parameter = '', result = '', indent_count = 1):
     Print task result, mainly just here in order to keep the information flow
     looking sort of consistent.
     '''
-    if result:
-        result = result.ljust(3) + ' '
+    result = result.ljust(3)
     if parameter:
-        print(f"{(INDENT*indent_count + description).ljust(KEY_WIDTH)} {result}({parameter})")
+        print(f"{(INDENT*indent_count + description).ljust(KEY_WIDTH)} {result} ({parameter})")
     else:
         print(f"{(INDENT*indent_count + description).ljust(KEY_WIDTH)} {result}")
 
