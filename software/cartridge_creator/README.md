@@ -59,7 +59,7 @@ The *Cartridge Creator* also supports replacing a few of the assets used by the 
 ### 2.1.2> Creating a snapshot cartridge
 The snapshot cartridge, allows you to use ZX Spectrum [*.SNA*](https://worldofspectrum.org/faq/reference/formats.htm)-files instead of the traditional 16K ROM-files supported by the standard cartridge. What this means is that you aren't limited by the original 10 titles released for the ZX Interface 2, instead you'll have access to thousands of them instead. The [Snapshot Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/snapshot_loader) takes care of most of the complexity running on the ZX Spectrum itself, but the *Cartridge Creator* will take care of packaging the 48K snapshot data along with the loader itself on a single 27C512 or W27C512 (E)EPROM chip.
 
-![Cartridge Creator](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/cartridge_creator_007.jpg)
+![Cartridge Creator](https://github.com/tebl/ZX-Interface-2.021/raw/main/gallery/cartridge_creator_012.jpg)
 
 To create a new snapshot cartridge called *test*, you'd issue a command like the following (note that this will overwrite the contents if you specify that is already in use):
 ```
