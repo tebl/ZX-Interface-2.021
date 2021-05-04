@@ -74,7 +74,7 @@ The file *_cartridge.ini* defines how the script works, for the most part it sho
 
 Put the snapshot-file that you want to use and copy it into the folder, then change the *FileName* option to match. The only other setting that you might need to deal with is *LoaderAddress*, it is used to override the current behavior of [Snapshot Loader](https://github.com/tebl/ZX-Interface-2.021/tree/main/software/snapshot_loader) when it comes to the final steps necessary to restore the snapshot - it is a routine that needs to be stored in RAM as we'll be banking out the cartridge in favor of the original ZX Spectrum ROM. Leaving it commented out or set to 0x0000, means that we'll try to put this routine below the system stack - possibly overwriting some parts of the program. If you experience a program where this destroys something that is needed for the game to work, you can specify a different address to use here instead. Finding a suitable location may require loading the snapshot in an emulator, then opening up the debugger or memory browser within it and look for a space that is at least 17 bytes then try again.
 
-## 0.2> Verifying a cartridge
+## 2.2> Verifying a cartridge
 Somehow I ended up writing a lot of verification code to ensure that the options entered into the cartridge definition, for a description of most of the stuff that goes into them - see [Creating a blank cartridge](#21-creating-a-blank-cartridge). The idea is that you run through the verification routines and it spits out most of your errors in an understandable format.
 
 The following command verifies the cartridge definition for a cartridge named *test*:
