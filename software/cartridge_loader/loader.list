@@ -47,112 +47,112 @@ BFFE-            I    22       KR_EN_LKJH              .EQU    $BFFE            
 0080-            I    20       A_FLASH         .EQU    %10000000
 6000-                  8       TARGET  .EQU    $6000                   ; Payload target RAM start
 2000-                  9       SZ_RAM  .EQU    $2000                   ; Maximum payload size
-0000-                 10
-0000-                 11       ;
-0000-                 12       ; This is the main program entrypoint when first starting up, also run when
-0000-                 13       ; the user hits the reset button on the interface. The rest of the reset
-0000-                 14       ; vectors are simply put here just in case the CPU retains something from
-0000-                 15       ; previously run software.
-0000-                 16       ;
-0000-C3 00 01         17 ( 10) RESET:  JP              MAIN                    ; Just restart the main program.
-0008                 18                       .NO             $0008,$FF
-0008-C3 00 01         19 ( 10) RST_08: JP              MAIN                    ; Just restart the main program.
-000B-ED 4D            20 ( 14)                 RETI                                    ; We won't get here.
-0010                 21                       .NO             $0010,$FF
-0010-C3 00 01         22 ( 10) RST_10: JP              MAIN                    ; Just restart the main program.
-0013-ED 4D            23 ( 14)                 RETI                                    ; We won't get here.
-0018                 24                       .NO             $0018,$FF
-0018-C3 00 01         25 ( 10) RST_18: JP              MAIN                    ; Just restart the main program.
-001B-ED 4D            26 ( 14)                 RETI                                    ; We won't get here.
-0028                 27                       .NO             $0028,$FF
-0028-C3 00 01         28 ( 10) RST_28: JP              MAIN                    ; Just restart the main program.
-002B-ED 4D            29 ( 14)                 RETI                                    ; We won't get here.
-0030                 30                       .NO             $0030,$FF
-0030-C3 00 01         31 ( 10) RST_30: JP              MAIN                    ; Just restart the main program.
-0033-ED 4D            32 ( 14)                 RETI                                    ; We won't get here.
-0035-                 33
-0035-                 34       ;
-0035-                 35       ; This is the standard maskable interrupt entrypoint that is normally used
-0035-                 36       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
-0035-                 37       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
-0035-                 38       ;
-0038                 39                       .NO             $0038,$FF
-0038-F3               40 (  4) RST_38: DI
-0039-C3 00 01         41 ( 10)                 JP              MAIN                    ; Just restart the main program.
-003C-ED 4D            42 ( 14)                 RETI                                    ; We won't get here.
-003E-                 43
-003E-                 44       ;
-003E-                 45       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
-003E-                 46       ; this needs to be here so that pushing the NMI button on the interface doesn't
-003E-                 47       ; simply crash the code - it'll jump here, expecting the code to be ready for
-003E-                 48       ; it.
-003E-                 49       ;
-0066                 50                       .NO             $0066,$FF
-0066-F3               51 (  4) RST_66: DI
-0067-C3 00 01         52 ( 10)                 JP              MAIN                    ; Jump to the regular RESET routine
-006A-ED 45            53 ( 14)                 RETN                                    ; We won't get here.
-006C-                 54
-006C-                 55       ;
-006C-                 56       ; Main program, relocated here to stay clear of the ROM space associated with
-006C-                 57       ; the various interrupts. The code will run only once; copying the boot screen
-006C-                 58       ; into the screen memory, copy the payload program ("selector program") from
-006C-                 59       ; payload to a RAM location and then start it from there.
-006C-                 60       ;
-0100                 61                       .NO             $0100,$FF
-0100-F3               62 (  4) MAIN:   DI                                              ; Disable interrupts (just to be safe)
-0101-21 00 5F         63 ( 10)                 LD              HL,STACK                ; Load stack address to use
-0104-F9               64 (  6)                 LD              SP,HL                   ;  then configure it for use.
-0105-ED 56            65 (  8)                 IM              1                               ; Set interrupt mode 1
-0107-3E 00            66 (  7)                 LD              A,A_BLACK               ; Load black colour into A
-0109-0E FE            67 (  7)                 LD              C,CTRL_BORDER   ;  and use it to initialize
-010B-ED 79            68 ( 12)                 OUT             (C),A                   ;  the border colour.
-010D-                 69
-010D-21 00 05         70 ( 10)                 LD              HL,BOOT_SCREEN  ; Set location of boot screen data
-0110-CD 25 01         71 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
-0113-CD 19 01         72 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
-0116-C3 00 60         73 ( 10)                 JP              TARGET                  ; Start execution of payload program.
-0119-                 74
-0119-                 75       ;
-0119-                 76       ; Copy the payload program, usually the "selector" program, into RAM. Given
-0119-                 77       ; that we want to avoid using more RAM than is available on the 16K version of
-0119-                 78       ; the ZX Spectrum we'll limit the program size to 8K.
-0119-                 79       ;
-0119-                 80       COPY_TO_RAM:
-0119-21 00 20         81 ( 10)                 LD              HL,PAYLOAD              ; Set source location
-011C-01 00 20         82 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
-011F-11 00 60         83 ( 10)                 LD              DE,TARGET               ; Set target location
-0122-ED B0            84 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
-0124-C9               85 ( 10)                 RET
-0125-                 86
-0125-                 87       LIB_SCR:                                                ; Routines for copying SCR into screen memory
-0125-                 88                       .IN             lib_scr.asm
-0125-            I     1       ;
-0125-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
-0125-            I     3       ; screen memory as well as corresponding attribute data. HL points
-0125-            I     4       ; to start of data.
-0125-            I     5       ;
-0125-            I     6       SHOW_SCR:
-0125-D5          I     7 ( 11)                 PUSH    DE
-0126-DD E5       I     8 ( 15)                 PUSH    IX
-0128-F5          I     9 ( 11)                 PUSH    AF
-0129-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
-012D-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
-0130-            I    12       NEXT_BYTE:
-0130-7E          I    13 (  7)                 LD              A,(HL)
-0131-23          I    14 (  6)                 INC             HL
-0132-            I    15
-0132-DD 77 00    I    16 ( 19)                 LD              (IX),A
-0135-DD 23       I    17 ( 10)                 INC             IX
-0137-            I    18
-0137-1B          I    19 (  6)                 DEC             DE
-0138-7A          I    20 (  4)                 LD              A,D
-0139-B3          I    21 (  4)                 OR              E
-013A-C2 30 01    I    22 ( 10)                 JP              NZ,NEXT_BYTE
-013D-F1          I    23 ( 10)                 POP             AF
-013E-DD E1       I    24 ( 14)                 POP             IX
-0140-D1          I    25 ( 10)                 POP             DE
-0141-C9          I    26 ( 10)                 RET
-0142-                 89
+3B00-                 10       BORDER  .EQU    $3B00                   ; This is defined in selector
+0000-                 11
+0000-                 12       ;
+0000-                 13       ; This is the main program entrypoint when first starting up, also run when
+0000-                 14       ; the user hits the reset button on the interface. The rest of the reset
+0000-                 15       ; vectors are simply put here just in case the CPU retains something from
+0000-                 16       ; previously run software.
+0000-                 17       ;
+0000-C3 00 01         18 ( 10) RESET:  JP              MAIN                    ; Just restart the main program.
+0008                 19                       .NO             $0008,$FF
+0008-C3 00 01         20 ( 10) RST_08: JP              MAIN                    ; Just restart the main program.
+000B-ED 4D            21 ( 14)                 RETI                                    ; We won't get here.
+0010                 22                       .NO             $0010,$FF
+0010-C3 00 01         23 ( 10) RST_10: JP              MAIN                    ; Just restart the main program.
+0013-ED 4D            24 ( 14)                 RETI                                    ; We won't get here.
+0018                 25                       .NO             $0018,$FF
+0018-C3 00 01         26 ( 10) RST_18: JP              MAIN                    ; Just restart the main program.
+001B-ED 4D            27 ( 14)                 RETI                                    ; We won't get here.
+0028                 28                       .NO             $0028,$FF
+0028-C3 00 01         29 ( 10) RST_28: JP              MAIN                    ; Just restart the main program.
+002B-ED 4D            30 ( 14)                 RETI                                    ; We won't get here.
+0030                 31                       .NO             $0030,$FF
+0030-C3 00 01         32 ( 10) RST_30: JP              MAIN                    ; Just restart the main program.
+0033-ED 4D            33 ( 14)                 RETI                                    ; We won't get here.
+0035-                 34
+0035-                 35       ;
+0035-                 36       ; This is the standard maskable interrupt entrypoint that is normally used
+0035-                 37       ; with the ZX Spectrum, it is hardwired into the ULA and will automatically
+0035-                 38       ; initiate an interrupt every 100ms. This is referred to as Interrupt mode 1.
+0035-                 39       ;
+0038                 40                       .NO             $0038,$FF
+0038-F3               41 (  4) RST_38: DI
+0039-C3 00 01         42 ( 10)                 JP              MAIN                    ; Just restart the main program.
+003C-ED 4D            43 ( 14)                 RETI                                    ; We won't get here.
+003E-                 44
+003E-                 45       ;
+003E-                 46       ; The non-maskable interrupt (NMI) is hardwired to do a jump to this address,
+003E-                 47       ; this needs to be here so that pushing the NMI button on the interface doesn't
+003E-                 48       ; simply crash the code - it'll jump here, expecting the code to be ready for
+003E-                 49       ; it.
+003E-                 50       ;
+0066                 51                       .NO             $0066,$FF
+0066-F3               52 (  4) RST_66: DI
+0067-C3 00 01         53 ( 10)                 JP              MAIN                    ; Jump to the regular RESET routine
+006A-ED 45            54 ( 14)                 RETN                                    ; We won't get here.
+006C-                 55
+006C-                 56       ;
+006C-                 57       ; Main program, relocated here to stay clear of the ROM space associated with
+006C-                 58       ; the various interrupts. The code will run only once; copying the boot screen
+006C-                 59       ; into the screen memory, copy the payload program ("selector program") from
+006C-                 60       ; payload to a RAM location and then start it from there.
+006C-                 61       ;
+0100                 62                       .NO             $0100,$FF
+0100-F3               63 (  4) MAIN:   DI                                              ; Disable interrupts (just to be safe)
+0101-21 00 5F         64 ( 10)                 LD              HL,STACK                ; Load stack address to use
+0104-F9               65 (  6)                 LD              SP,HL                   ;  then configure it for use.
+0105-ED 56            66 (  8)                 IM              1                               ; Set interrupt mode 1
+0107-3A 00 3B         67 ( 13)                 LD              A,(BORDER)              ; Load attribute from ROM into A
+010A-D3 FE            68 ( 11)                 OUT             (CTRL_BORDER),A ;  and set it as the border.
+010C-                 69
+010C-21 00 05         70 ( 10)                 LD              HL,BOOT_SCREEN  ; Set location of boot screen data
+010F-CD 24 01         71 ( 17)                 CALL    SHOW_SCR                ; Copy boot image to screen memory
+0112-CD 18 01         72 ( 17)                 CALL    COPY_TO_RAM             ; Copy payload data to new RAM location
+0115-C3 00 60         73 ( 10)                 JP              TARGET                  ; Start execution of payload program.
+0118-                 74
+0118-                 75       ;
+0118-                 76       ; Copy the payload program, usually the "selector" program, into RAM. Given
+0118-                 77       ; that we want to avoid using more RAM than is available on the 16K version of
+0118-                 78       ; the ZX Spectrum we'll limit the program size to 8K.
+0118-                 79       ;
+0118-                 80       COPY_TO_RAM:
+0118-21 00 20         81 ( 10)                 LD              HL,PAYLOAD              ; Set source location
+011B-01 00 20         82 ( 10)                 LD              BC,SZ_RAM               ; Number of bytes to copy
+011E-11 00 60         83 ( 10)                 LD              DE,TARGET               ; Set target location
+0121-ED B0            84 (16+)                 LDIR                                    ; Have Z80 copy data until all bytes copied
+0123-C9               85 ( 10)                 RET
+0124-                 86
+0124-                 87       LIB_SCR:                                                ; Routines for copying SCR into screen memory
+0124-                 88                       .IN             lib_scr.asm
+0124-            I     1       ;
+0124-            I     2       ; Loads a complete SCR-file, essentially overwriting the entire
+0124-            I     3       ; screen memory as well as corresponding attribute data. HL points
+0124-            I     4       ; to start of data.
+0124-            I     5       ;
+0124-            I     6       SHOW_SCR:
+0124-D5          I     7 ( 11)                 PUSH    DE
+0125-DD E5       I     8 ( 15)                 PUSH    IX
+0127-F5          I     9 ( 11)                 PUSH    AF
+0128-DD 21 00 40 I    10 ( 14)                 LD              IX,SCREEN
+012C-11 00 1B    I    11 ( 10)                 LD              DE,SZ_SCRN+SZ_ATTR
+012F-            I    12       NEXT_BYTE:
+012F-7E          I    13 (  7)                 LD              A,(HL)
+0130-23          I    14 (  6)                 INC             HL
+0131-            I    15
+0131-DD 77 00    I    16 ( 19)                 LD              (IX),A
+0134-DD 23       I    17 ( 10)                 INC             IX
+0136-            I    18
+0136-1B          I    19 (  6)                 DEC             DE
+0137-7A          I    20 (  4)                 LD              A,D
+0138-B3          I    21 (  4)                 OR              E
+0139-C2 2F 01    I    22 ( 10)                 JP              NZ,NEXT_BYTE
+013C-F1          I    23 ( 10)                 POP             AF
+013D-DD E1       I    24 ( 14)                 POP             IX
+013F-D1          I    25 ( 10)                 POP             DE
+0140-C9          I    26 ( 10)                 RET
+0141-                 89
 0400                 90                       .NO             $0400
 0400-                 91       SIGNATURE_LOCATION:                             ; Used when checking if bank actually switched
 0400-5A 58 20 49 

@@ -6,14 +6,6 @@
 		.IN		constants.asm	; Constants
 		.IN		attributes.asm	; Attribute definitions
 
-C_DEF	.EQU	A_P_BLACK|A_WHITE|A_BRIGHT
-C_TITLE	.EQU	A_P_BLACK|A_WHITE|A_BRIGHT
-C_NAME	.EQU	A_P_BLACK|A_WHITE
-C_TEXT	.EQU	A_P_BLACK|A_WHITE
-C_SEL	.EQU	A_P_WHITE|A_BLACK|A_BRIGHT
-C_HELP	.EQU	A_P_BLACK|A_WHITE|A_BRIGHT
-C_ERROR	.EQU	A_P_BLACK|A_RED|A_BRIGHT
-
 CUR_X	.EQU	VARS+0			; Current cursor location on screen, X
 CUR_Y	.EQU	VARS+1			;  and Y-location.
 LAST_A	.EQU	VARS+2			; Last attribute used when clearing screen
@@ -21,7 +13,9 @@ CUR_IDX	.EQU	VARS+3			; Index for title selected
 LAST_K	.EQU	VARS+4			; Last key value in case we need it
 SLOTS	.EQU	VARS+5			; Number of slots available
 
-MAIN:	CALL	GET_SLOT_COUNT	; Calculate SLOTS value
+MAIN:	LD		A,(S_BORDER_M)
+		OUT		(CTRL_BORDER),A
+		CALL	GET_SLOT_COUNT	; Calculate SLOTS value
 		CALL	RESET_CURSOR	; Reset cursor
 		LD		BC,$0400		; Set up the custom delay routine, 
 		LD		DE,$0100		;  mainly so that we have time to
@@ -53,13 +47,15 @@ GET_SLOT_COUNT:
 ;
 ; Error screen display.
 ;
-ERROR:	LD		A,C_ERROR		; Load error screen attribute definition,
+ERROR:	LD		A,(S_ERROR)		; Load error screen attribute definition,
 		CALL	CLR_BG			;  and clear the screen with it.
 
 		; Outputs the title block
 		LD		DE,ERR_TITLE
+		LD		A,(S_ERROR_TITLE)
+		LD		C,A
+		LD		A,(S_ERROR)
 		LD		B,A
-		LD		C,C_ERROR|A_FLASH
 		CALL	TITLE_BOX
 
 		; Error message section
@@ -76,20 +72,22 @@ ERROR:	LD		A,C_ERROR		; Load error screen attribute definition,
 SELECTOR:
 		LD		A,1				; Initialize title index
 		LD		(CUR_IDX),A		;  save in RAM for later.
-		LD		A,C_DEF			; Get default attribute value
+		LD		A,(S_DEFAULT)	; Get default attribute value
 		CALL	CLR_BG			;  and clear screen with it.
 
 		; Outputs the title block
 		LD		DE,TITLE0
-		LD		B,C_TITLE
-		LD		C,C_NAME
+		LD		A,(S_TITLE)
+		LD		B,A
+		LD		A,(S_NAME)
+		LD		C,A
 		CALL	TITLE_BOX
 
 		; Output bank names
 		CALL	UPDATE_TITLES
 		
 		; Output help section
-.HELP:	LD		A,C_HELP
+.HELP:	LD		A,(S_HELP)
 		LD		HL,$0015
 		CALL	SET_CURSOR
 		CALL	SET_ATTR_ROW
@@ -223,10 +221,10 @@ SET_HIGHLIGHT:
 		LD		A,(CUR_IDX)
 		CP		A,B				; Check if current index?
 		JR		NZ,.INACTIVE	;  no, jump to inactive
-		LD		A,C_SEL			;  yes, so set attribute style to selected.
+		LD		A,(S_ACTIVE)	;  yes, so set attribute style to selected.
 		JR		.SET_ROW
 .INACTIVE:
-		LD		A,C_TEXT
+		LD		A,(S_INACTIVE)
 .SET_ROW:
 		CALL	SET_ATTR_ROW
 		POP		BC
@@ -795,8 +793,31 @@ FONT1:	.BI		font1.bin
 		.NO		$7800,$FF
 FONT2:	.BI		font2.bin
 
+		.NO		$7B00
+ATTRIBUTES:		; Text and border attributes used.
+S_BORDER:		; Used to set border in loader.
+		.DB		A_BLACK
+S_BORDER_M:		; Border colour once in the menu.
+		.DB		A_BLACK
+S_DEFAULT:		; Standard text
+		.DB		A_P_BLACK|A_WHITE|A_BRIGHT
+S_TITLE:		; Program title (MSG_TITLE)
+		.DB		A_P_BLACK|A_WHITE|A_BRIGHT
+S_NAME:			; Cartridge title (TITLE0)
+		.DB		A_P_BLACK|A_WHITE
+S_INACTIVE:		; Inactive menu row.
+		.DB		A_P_BLACK|A_WHITE
+S_ACTIVE:		; Active menu row.
+		.DB		A_P_WHITE|A_BLACK|A_BRIGHT
+S_HELP:			; Help text (MSG_HELP)
+		.DB		A_P_BLACK|A_WHITE|A_BRIGHT
+S_ERROR			; Error screen text
+		.DB		A_P_BLACK|A_RED|A_BRIGHT
+S_ERROR_TITLE:	; Error screen title
+		.DB		A_P_BLACK|A_RED|A_BRIGHT|A_FLASH
+		
 		.NO		$7C00,$FF
-TITLE0	.AZ		"        Cartridge Loader       "
+TITLE0:	.AZ		"        Cartridge Loader       "
 		.NO		$7C20,$00
 TITLE1:	.AZ		" Name 1"
 		.NO		$7C40,$00

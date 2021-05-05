@@ -7,6 +7,7 @@
 		.IN		attributes.asm
 TARGET	.EQU	$6000			; Payload target RAM start
 SZ_RAM	.EQU	$2000			; Maximum payload size
+BORDER	.EQU	$3B00			; This is defined in selector
 
 ;
 ; This is the main program entrypoint when first starting up, also run when
@@ -63,9 +64,8 @@ MAIN:	DI						; Disable interrupts (just to be safe)
 		LD		HL,STACK		; Load stack address to use
 		LD		SP,HL			;  then configure it for use.
 		IM		1				; Set interrupt mode 1
-		LD		A,A_BLACK		; Load black colour into A
-		LD		C,CTRL_BORDER	;  and use it to initialize
-		OUT		(C),A			;  the border colour.
+		LD		A,(BORDER)		; Load attribute from ROM into A
+		OUT		(CTRL_BORDER),A	;  and set it as the border.
 		
 		LD		HL,BOOT_SCREEN	; Set location of boot screen data
 		CALL	SHOW_SCR		; Copy boot image to screen memory
@@ -90,7 +90,7 @@ LIB_SCR:						; Routines for copying SCR into screen memory
 		.NO		$0400
 SIGNATURE_LOCATION:				; Used when checking if bank actually switched
 		.AZ		"ZX Interface 2.021"
-		
+
 		.NO		$0500
 BOOT_SCREEN:
 		.BI		boot.scr
