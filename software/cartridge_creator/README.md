@@ -16,8 +16,8 @@ I did not want to change the assembly source every time I wanted to change out t
   - [2.3> Processing cartridge](#23-processing-cartridge)
 - [Appendix A> Command-line arguments](#appendix-a-command-line-arguments)
 - [Appendix B> Cartridge defition](#appendix-b-cartridge-definition)
-  - [B.1> 'standard' cartridge](#b-1-standard-cartridge)
-  - [B.2> 'snapsho' cartridge](#b-1-snapshot-cartridge)
+  - [B.1> 'standard' cartridge](#b1-standard-cartridge)
+  - [B.2> 'snapshot' cartridge](#b2-snapshot-cartridge)
 - [Appendix C> Attributes](#appendix-c-attributes)
 
 # 1> Requirements
