@@ -2,6 +2,7 @@ import os
 from configparser import ConfigParser
 from functions import *
 import output_handler
+import attributes as A
 
 class CartridgeFile(output_handler.OutputHandler):
     def __init__(self, dir_path, program_settings):
@@ -124,7 +125,7 @@ class CartridgeFile(output_handler.OutputHandler):
         config.set('Cartridge', ';BootScreen=boot.scr')
         config.set('Cartridge', ';Font1=Computer')
         config.set('Cartridge', ';Font2=MSX')
-        
+                
         blank_path = os.path.join(dir_path, 'blank.rom')
         with open(program_settings.blank_slot, 'rb') as input_file:
             with open(blank_path, 'wb') as blank_file:
@@ -150,7 +151,18 @@ class CartridgeFile(output_handler.OutputHandler):
                     config.set(section, ';Title="Blank slot"')
                     config.set(section, ';FileName=blank.rom')
                 print_result(section, '', 'ADD', indent_count=2)
-                
+
+        config.add_section('Attributes')
+        config.set('Attributes', 'Border', '"BLACK"')
+        config.set('Attributes', 'BorderMenu', '"BLACK"')
+        config.set('Attributes', 'DefaultText', '"WHITE BLACK_PAPER BRIGHT"')
+        config.set('Attributes', 'ProgramTitle', '"WHITE BLACK_PAPER BRIGHT"')
+        config.set('Attributes', 'CartridgeTitle', '"WHITE BLACK_PAPER"')
+        config.set('Attributes', 'InactiveRow', '"WHITE BLACK_PAPER"')
+        config.set('Attributes', 'ActiveRow', '"BLACK WHITE_PAPER BRIGHT"')
+        config.set('Attributes', 'HelpText', '"WHITE BLACK_PAPER BRIGHT"')
+        config.set('Attributes', 'ErrorText', '"RED BLACK_PAPER BRIGHT"')
+        config.set('Attributes', 'ErrorTitle', '"RED BLACK_PAPER BRIGHT FLASH"')
 
         definition = os.path.join(dir_path, '_cartridge.ini')
         with open(definition, 'w') as config_file:
@@ -193,6 +205,10 @@ class CartridgeFile(output_handler.OutputHandler):
                 self.file_add_font('Font1', input_file, output_file)
                 self.file_fast_forward(selector_address(0x7800), input_file, output_file)
                 self.file_add_font('Font2', input_file, output_file)
+        
+                # Configure screen attributes used
+                self.file_fast_forward(selector_address(0x7B00), input_file, output_file)
+                self.file_add_attributes(input_file, output_file)
         
                 # Write cartridge and slot titles at $7C00
                 self.file_fast_forward(selector_address(0x7C00), input_file, output_file)
@@ -281,6 +297,59 @@ class CartridgeFile(output_handler.OutputHandler):
         print_result('Data', format_number(num_bytes, format='human'), 'OK', indent_count)
         return num_bytes
 
+
+    def file_add_attributes(self, input_file, output_file, indent_count=2):
+        '''
+        Write the attributes section of the ROM, these control the screen
+        attributes used at various points in the loader (mainly things like
+        colours used as the borders as well as text).
+        '''
+        attributes = list(map(lambda x: x[1], self.get_attributes()))
+        self.file_write_byte(attributes, output_file)
+        s = []
+        for data in attributes:
+            s.append(format_hex8(byte_to_int(data)))
+        input_file.seek(input_file.tell() + len(attributes))
+        print_result('Attributes', ' '.join(s), 'OK', indent_count)
+
+
+    def get_attributes(self):
+        '''
+        Get all of the relevant attributes, but given that we need to maintain
+        the correct sequence we use a list instead of the expected dict.
+        Attribute definitions are within its own file, but shortened to A just
+        to keep things at a readable level.
+        '''
+        return [
+            ['Border' , self.get_attribute('Border', A.BLACK, range(0, 8))],
+            ['BorderMenu' , self.get_attribute('BorderMenu', A.BLACK, range(0, 8))],
+            ['DefaultText' , self.get_attribute('DefaultText', A.BLACK_PAPER | A.WHITE | A.BRIGHT, range(0, 256))],
+            ['ProgramTitle' , self.get_attribute('ProgramTitle', A.BLACK_PAPER | A.WHITE | A.BRIGHT, range(0, 256))],
+            ['CartridgeTitle' , self.get_attribute('CartridgeTitle', A.BLACK_PAPER | A.WHITE, range(0, 256))],
+            ['InactiveRow' , self.get_attribute('InactiveRow', A.BLACK_PAPER | A.WHITE, range(0, 256))],
+            ['ActiveRow' , self.get_attribute('ActiveRow', A.WHITE_PAPER | A.BLACK | A.BRIGHT, range(0, 256))],
+            ['HelpText' , self.get_attribute('HelpText', A.BLACK_PAPER | A.WHITE | A.BRIGHT, range(0, 256))],
+            ['ErrorText' , self.get_attribute('ErrorText', A.BLACK_PAPER | A.RED | A.BRIGHT, range(0, 256))],
+            ['ErrorTitle' , self.get_attribute('ErrorTitle', A.BLACK_PAPER | A.RED | A.BRIGHT | A.FLASH, range(0, 256))]
+        ]
+
+
+    def get_attribute(self, key, default, valid_range=range(0, 256), section = 'Attributes'):
+        '''
+        Get a named attribute from the configuration, returning the default
+        value only if no value has been supplied. In the case of unparsable
+        values we'll end up with expections instead (either from Attributes
+        due to being unable to parse them or if they fail to fall within the
+        expected range).
+        '''
+        if self.have_section(section) and self.have_setting(key, section):
+            tokens = list(map(str.strip, self.setting(key, section).split(' ')))
+            value = A.from_tokens(tokens)
+            if value not in valid_range:
+                raise ValueError(f"{key} value is invalid, valid range is ({valid_range})")
+            return bytes([value])
+        return bytes([default])
+    
 
     def file_add_slot_titles(self, input_file, output_file, indent_count=2):
         '''
@@ -408,6 +477,7 @@ class CartridgeFile(output_handler.OutputHandler):
         self.verify_placeholder()
         print()
         self.verify_cartridge()
+        self.verify_attributes()
 
     def verify_cartridge(self):
         super().verify_cartridge()
@@ -492,7 +562,7 @@ class CartridgeFile(output_handler.OutputHandler):
                         self.verify_key('Title', section, indent_count + 1)
                         self.verify_file('Filename', section, indent_count + 1)
                 else:
-                    print_result('Empty slot', 'Rest of definition skipped', 'OK', indent_count + 1)
+                    print_result('Empty slot', '', 'OK', indent_count + 1)
                     self.blank_seen = True
         print()
 
@@ -521,3 +591,13 @@ class CartridgeFile(output_handler.OutputHandler):
         except ValueError as e:
             print_result(name, f"Invalid value ({e})", 'ERR', indent_count=2)
         return False
+        
+    def verify_attributes(self):
+        try:
+            print_result('Attributes', '', 'OK')
+            for key,value in self.get_attributes():
+                attribute = A.from_value(byte_to_int(value), is_border=key.startswith('Border'))
+                attribute = A.format_tokens(attribute)
+                print_result(key, f"{format_hex8(byte_to_int(value))}, {attribute}", 'OK', indent_count=2)
+        except ValueError as e:
+            print_result('Attributes', str(e), 'ERR')

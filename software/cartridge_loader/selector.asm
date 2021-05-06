@@ -13,9 +13,7 @@ CUR_IDX	.EQU	VARS+3			; Index for title selected
 LAST_K	.EQU	VARS+4			; Last key value in case we need it
 SLOTS	.EQU	VARS+5			; Number of slots available
 
-MAIN:	LD		A,(S_BORDER_M)
-		OUT		(CTRL_BORDER),A
-		CALL	GET_SLOT_COUNT	; Calculate SLOTS value
+MAIN:	CALL	GET_SLOT_COUNT	; Calculate SLOTS value
 		CALL	RESET_CURSOR	; Reset cursor
 		LD		BC,$0400		; Set up the custom delay routine, 
 		LD		DE,$0100		;  mainly so that we have time to
@@ -70,6 +68,9 @@ ERROR:	LD		A,(S_ERROR)		; Load error screen attribute definition,
 ; Selection screen display
 ;
 SELECTOR:
+		LD		A,(S_BORDER_M)	; Get the configured border to use and
+		OUT		(CTRL_BORDER),A	;  set it before doing anything else.
+
 		LD		A,1				; Initialize title index
 		LD		(CUR_IDX),A		;  save in RAM for later.
 		LD		A,(S_DEFAULT)	; Get default attribute value
