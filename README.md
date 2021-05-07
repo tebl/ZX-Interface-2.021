@@ -41,14 +41,3 @@ The *ZX Interface 2.021* has a handful of jumpers that need to be set correctly 
 The second jumper, middle right section allows you to hardcode one of the address lines used for bank switching. Setting it the lower position forces it high, in effect allowing you to quickly select between two 16k ROM images in the first and second bank - when all else fails. This is here as a way to swap between diagnostic images when the machine isn't capabable of doing this in the preferred way. In normal use, jumper across pins 1-2 (this is the upper position).
 
 **NB!** As with all kinds of vintage electronics that you don't want to destroy, you shouldn't attempt to insert or remove a cartridge when the system is powered up. Ignoring this will either kill this interface, the cartridge or your computer - sometimes all of them.
-
-## References
-I'm not good enough to just intuitively know how everything works by looking at it, and especially the fact that I don't actually own a ZX Interface 2 means that this project didn't actually materialize out of nothing. I've tried adding a list below for my main inspirations when it comes to the inner workings of the design, it can be considered a safe assumption to consider the bugs implemented - mine alone. For the stuff that actually works, I recommend having a read-through of the following pages:
-
-* http://www.users.globalnet.co.uk/~jg27paw4/yr01/yr01_58.htm
-* http://www.users.globalnet.co.uk/~jg27paw4/yr03/yr03_19.htm#Buffer
-* http://www.users.globalnet.co.uk/~jg27paw4/yr04/yr04_25.htm
-* https://k1.spdns.de/Vintage/Sinclair/82/Doityourself/IF2%20cartridges/
-* https://blog.gjmccarthy.co.uk/wp-content/uploads/2019/12/how.html
-* http://www.fruitcake.plus.com/Sinclair/Interface2/Interface/Interface2_Circuitry.htm
-* http://trastero.speccy.org/cosas/droy/cartuchos/cartuchos_s.htm
