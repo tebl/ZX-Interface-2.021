@@ -491,7 +491,7 @@ U 1 1 607A138F
 P 5950 2275
 F 0 "U1" H 5725 3525 50  0000 C CNN
 F 1 "27C020" V 5950 2275 50  0000 C CNN
-F 2 "Package_DIP:DIP-32_W15.24mm_Socket_LongPads" H 5950 2275 50  0001 C CNN
+F 2 "27c020:DIP-32_W15.24mm_Socket_LongPads" H 5950 2275 50  0001 C CNN
 F 3 "http://ww1.microchip.com/downloads/en/devicedoc/doc0570.pdf" H 5950 2275 50  0001 C CNN
 	1    5950 2275
 	1    0    0    -1  

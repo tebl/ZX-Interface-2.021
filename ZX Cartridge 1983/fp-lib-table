@@ -3,4 +3,5 @@
   (lib (name zx_spectrum)(type KiCad)(uri $KIPRJMOD/../common/modules/zx_spectrum.pretty)(options "")(descr ""))
   (lib (name artwork)(type KiCad)(uri $KIPRJMOD/../common/modules/artwork.pretty)(options "")(descr ""))
   (lib (name solder_bridge)(type KiCad)(uri $KIPRJMOD/../common/modules/solder_bridge.pretty)(options "")(descr ""))
+  (lib (name 27c020)(type KiCad)(uri $KIPRJMOD/../common/modules/27c020.pretty)(options "")(descr ""))
 )
