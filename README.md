@@ -30,6 +30,7 @@ The following table will point you to more information about the specific module
 | [ZX Interface 2.021](https://github.com/tebl/ZX-Interface-2.021/tree/main/ZX%20Interface%202021) | The actual interface, includes cartridge slot and joystick interface.
 | [ZX Diagnostic 2.021](https://github.com/tebl/ZX-Interface-2.021/tree/main/ZX%20Diagnostic%202021) | A diagnostic cartridge, only for use with *ZX Interface 2.021*.
 | [ZX Cartridge 2.021](https://github.com/tebl/ZX-Interface-2.021/tree/main/ZX%20Cartridge%202021) | Cartridge supporting up to two 64K ROMs, eight banks of data in total. Only for use with *ZX Interface 2.021*.
+| [ZX Cartridge 1.983](https://github.com/tebl/ZX-Interface-2.021/tree/main/ZX%20Cartridge%201983) | A simple cartridge that can also be used with the original ZX Interface 2 (without bank switching support).
 
 **NB!** As with all things you're soldering together by yourself, the one who soldered it - takes responsibility for it. I'll try to help in any way that I can, but know that this is a hobby-grade project and my health is not such that I can focus on too many things at any given time. Check out the [schematic](https://github.com/tebl/ZX-Interface-2.021/tree/main/documentation/schematic) while you wait, just about every problem is just an opportunity for learning and there is a significant chance that you'll be able to find your answer within it.
 
